@@ -1,0 +1,30 @@
+# Core TTS
+TTS==0.21.3
+transformers==4.36.2
+
+# Torch stack
+torch>=2.2.0
+torchvision>=0.17.0
+torchaudio>=2.2.0
+
+# API
+fastapi>=0.110.0
+uvicorn>=0.28.0
+python-dotenv>=1.0.1
+requests>=2.31.0
+
+# AI
+langgraph>=0.0.21
+langchain>=0.1.0
+langchain-openai>=0.1.0
+openai>=1.14.0
+elevenlabs>=0.3.0
+
+# Audio / Video
+gtts>=2.5.1
+pydub>=0.25.1
+moviepy>=1.0.3,<2.0.0
+
+# Visualization
+manim>=0.18.0
+streamlit>=1.31.0
