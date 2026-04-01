@@ -1,0 +1,46 @@
+[Scene 1 | 0–5s]
+"How does AI actually understand language?"
+"Not just words… but meaning between the lines."
+"Let me show you the secret behind ChatGPT."
+
+[Scene 2 | 5–15s]
+"Take this sentence:"
+"'The bank by the river.'"
+"Wait… what does 'bank' mean here?"
+"A money bank… or the side of a river?"
+
+[Scene 3 | 15–30s]
+"Humans use context naturally."
+"But how does AI do it?"
+"Using something called Self-Attention."
+"Where every word looks at every other word."
+
+[Scene 4 | 30–50s]
+"Each word gets three roles:"
+"Query — what am I looking for?"
+"Key — what do I match with?"
+"Value — what information do I carry?"
+
+[Scene 5 | 50–70s]
+"Now comes the magic."
+"Each word compares its Query with all other Keys."
+"This creates attention scores — showing relevance."
+"And suddenly… 'bank' connects strongly to 'river'."
+
+[Scene 6 | 70–90s]
+"These scores are used to combine information."
+"So 'bank' is no longer ambiguous."
+"It now understands: river bank."
+
+[Scene 7 | 90–105s]
+"And this happens for EVERY word…"
+"All at the same time."
+"That’s how AI understands entire sentences instantly."
+
+[Scene 8 | 105–115s]
+"That’s Self-Attention."
+"The core idea behind modern AI."
+
+[Scene 9 | 115–120s]
+"Thanks for watching!"
+"Subscribe for more AI explained simply."

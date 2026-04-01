@@ -7,16 +7,19 @@ requires-python = ">=3.11,<3.12"
 dependencies = [
     "elevenlabs>=0.3.0",
     "fastapi>=0.110.0",
+
     "gtts>=2.5.1",
     "langchain>=0.1.0",
     "langchain-openai>=0.1.0",
     "langgraph>=0.0.21",
     "manim>=0.18.0",
     "moviepy<2.0.0",
+    "omegaconf>=2.3.0",
     "openai>=1.14.0",
     "pydub>=0.25.1",
     "python-dotenv>=1.0.1",
     "requests>=2.31.0",
+    "soundfile>=0.13.1",
     "streamlit>=1.31.0",
     "torch>=2.2.0",
     "torchaudio>=2.2.0",
@@ -24,4 +27,6 @@ dependencies = [
     "transformers==4.36.2",
     "tts==0.21.3",
     "uvicorn>=0.28.0",
+    "vector-quantize-pytorch>=1.28.1",
+    "vocos>=0.1.0",
 ]

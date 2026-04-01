@@ -102,6 +102,12 @@ wheels = [
 ]
 
 [[package]]
+name = "antlr4-python3-runtime"
+version = "4.9.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/3e/38/7859ff46355f76f8d19459005ca000b6e7012f2f1ca597746cbcd1fbfe5e/antlr4-python3-runtime-4.9.3.tar.gz", hash = "sha256:f224469b4168294902bb1efa80a8bf7855f24c99aef99cbefc1bcd3cce77881b", size = 117034, upload-time = "2021-11-06T17:52:23.524Z" }
+
+[[package]]
 name = "anyascii"
 version = "0.3.3"
 source = { registry = "https://pypi.org/simple" }
@@ -523,6 +529,20 @@ wheels = [
 ]
 
 [[package]]
+name = "einx"
+version = "0.4.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "frozendict" },
+    { name = "numpy" },
+    { name = "sympy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/36/b3/2b0acbde4f763b72f65da58cea54f35386f537569c4c39f3d37de1c03710/einx-0.4.2.tar.gz", hash = "sha256:9aeea7053a4f683235e81b62383069085cc919a012748c8575f3557455377e11", size = 114546, upload-time = "2026-03-14T07:39:06.6Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/01/97/7afa0d833cae4d8e651b8265b7c95613199d9749a4976149b5fd66052a06/einx-0.4.2-py3-none-any.whl", hash = "sha256:c3d01878ffe34f2e038a14b98f82b4b47bba32ee2f127618ab31851e439ba2f0", size = 139917, upload-time = "2026-03-14T07:39:05.413Z" },
+]
+
+[[package]]
 name = "elevenlabs"
 version = "2.40.0"
 source = { registry = "https://pypi.org/simple" }
@@ -608,6 +628,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/54/6c/af95d9c4efb15cabff22642b608342f2bd67137eea6107202d91b5b03184/fonttools-4.62.1-cp311-cp311-win32.whl", hash = "sha256:942b03094d7edbb99bdf1ae7e9090898cad7bf9030b3d21f33d7072dbcb51a53", size = 2293075, upload-time = "2026-03-13T13:52:48.711Z" },
     { url = "https://files.pythonhosted.org/packages/d3/97/bf54c5b3f2be34e1f143e6db838dfdc54f2ffa3e68c738934c82f3b2a08d/fonttools-4.62.1-cp311-cp311-win_amd64.whl", hash = "sha256:e8514f4924375f77084e81467e63238b095abda5107620f49421c368a6017ed2", size = 2344593, upload-time = "2026-03-13T13:52:50.725Z" },
     { url = "https://files.pythonhosted.org/packages/fd/ba/56147c165442cc5ba7e82ecf301c9a68353cede498185869e6e02b4c264f/fonttools-4.62.1-py3-none-any.whl", hash = "sha256:7487782e2113861f4ddcc07c3436450659e3caa5e470b27dc2177cade2d8e7fd", size = 1152647, upload-time = "2026-03-13T13:54:22.735Z" },
+]
+
+[[package]]
+name = "frozendict"
+version = "2.4.7"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/b2/2a3d1374b7780999d3184e171e25439a8358c47b481f68be883c14086b4c/frozendict-2.4.7.tar.gz", hash = "sha256:e478fb2a1391a56c8a6e10cc97c4a9002b410ecd1ac28c18d780661762e271bd", size = 317082, upload-time = "2025-11-11T22:40:14.251Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/74/f94141b38a51a553efef7f510fc213894161ae49b88bffd037f8d2a7cb2f/frozendict-2.4.7-py3-none-any.whl", hash = "sha256:972af65924ea25cf5b4d9326d549e69a9a4918d8a76a9d3a7cd174d98b237550", size = 16264, upload-time = "2025-11-11T22:40:12.836Z" },
 ]
 
 [[package]]
@@ -1756,6 +1785,19 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c2/f3/d86c845465a2723ad7e1e5c36dcd75ddb82898b3f53be47ebd429fb2fa5d/nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:4936d1d6780fbe68db454f5e72a42ff64d1fd6397df9f363ae786930fd5c1cd4", size = 148047, upload-time = "2025-09-04T08:29:01.761Z" },
     { url = "https://files.pythonhosted.org/packages/a8/64/3708a90d1ebe202ffdeb7185f878a3c84d15c2b2c31858da2ce0583e2def/nvidia_nvtx-13.0.85-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:cb7780edb6b14107373c835bf8b72e7a178bac7367e23da7acb108f973f157a6", size = 148878, upload-time = "2025-09-04T08:28:53.627Z" },
+]
+
+[[package]]
+name = "omegaconf"
+version = "2.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "antlr4-python3-runtime" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/09/48/6388f1bb9da707110532cb70ec4d2822858ddfb44f1cdf1233c20a80ea4b/omegaconf-2.3.0.tar.gz", hash = "sha256:d5d4b6d29955cc50ad50c46dc269bcd92c6e00f5f90d23ab5fee7bfca4ba4cc7", size = 3298120, upload-time = "2022-12-08T20:59:22.753Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e3/94/1843518e420fa3ed6919835845df698c7e27e183cb997394e4a670973a65/omegaconf-2.3.0-py3-none-any.whl", hash = "sha256:7b4df175cdb08ba400f45cae3bdcae7ba8365db4d165fc65fd04b050ab63b46b", size = 79500, upload-time = "2022-12-08T20:59:19.686Z" },
 ]
 
 [[package]]
@@ -3184,6 +3226,39 @@ wheels = [
 ]
 
 [[package]]
+name = "vector-quantize-pytorch"
+version = "1.28.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "einops" },
+    { name = "einx" },
+    { name = "torch" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9b/01/419db7bb8f8b66904deffb4bd332166ba09e3fa8f22cc5fb1c3799119ab1/vector_quantize_pytorch-1.28.1.tar.gz", hash = "sha256:becbb08a6dbe9eca8bef909cd29acedc2f6801ddded25eae1c84c29b19c48428", size = 48182, upload-time = "2026-03-30T14:57:03.2Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/86/86/187ee7a10d22d1398b79a9a05cc991e9b7baebb27cc5787e52cdd087e78b/vector_quantize_pytorch-1.28.1-py3-none-any.whl", hash = "sha256:a722b485173d76459a250e3934234be2fb878b4604685f05ea4729c4e56db41d", size = 53759, upload-time = "2026-03-30T14:57:01.711Z" },
+]
+
+[[package]]
+name = "vocos"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "einops" },
+    { name = "encodec" },
+    { name = "huggingface-hub" },
+    { name = "numpy" },
+    { name = "pyyaml" },
+    { name = "scipy" },
+    { name = "torch" },
+    { name = "torchaudio" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/db/48/1e4d3a4a97292e47ebaa18e3eae6ecb2f57bde47693ccab0e7acb23f9ffe/vocos-0.1.0.tar.gz", hash = "sha256:b488224dbe398ff7d4790a027ad659478b4bc02e465db992c62c12b32ca043d8", size = 21107, upload-time = "2023-10-14T00:57:29.631Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0a/45/82fe9b5696eb5dd4f84632f75b549b48bed0c33a5920b6309fbafd7e3477/vocos-0.1.0-py3-none-any.whl", hash = "sha256:0ac13eaef68596074301e912d781399b3defa4b4ca60b6bc52c8a4b9209ca235", size = 24085, upload-time = "2023-10-14T00:57:27.972Z" },
+]
+
+[[package]]
 name = "wasabi"
 version = "1.1.3"
 source = { registry = "https://pypi.org/simple" }
@@ -3364,10 +3439,12 @@ dependencies = [
     { name = "langgraph" },
     { name = "manim" },
     { name = "moviepy" },
+    { name = "omegaconf" },
     { name = "openai" },
     { name = "pydub" },
     { name = "python-dotenv" },
     { name = "requests" },
+    { name = "soundfile" },
     { name = "streamlit" },
     { name = "torch" },
     { name = "torchaudio" },
@@ -3375,6 +3452,8 @@ dependencies = [
     { name = "transformers" },
     { name = "tts" },
     { name = "uvicorn" },
+    { name = "vector-quantize-pytorch" },
+    { name = "vocos" },
 ]
 
 [package.metadata]
@@ -3387,10 +3466,12 @@ requires-dist = [
     { name = "langgraph", specifier = ">=0.0.21" },
     { name = "manim", specifier = ">=0.18.0" },
     { name = "moviepy", specifier = "<2.0.0" },
+    { name = "omegaconf", specifier = ">=2.3.0" },
     { name = "openai", specifier = ">=1.14.0" },
     { name = "pydub", specifier = ">=0.25.1" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "requests", specifier = ">=2.31.0" },
+    { name = "soundfile", specifier = ">=0.13.1" },
     { name = "streamlit", specifier = ">=1.31.0" },
     { name = "torch", specifier = ">=2.2.0" },
     { name = "torchaudio", specifier = ">=2.2.0" },
@@ -3398,6 +3479,8 @@ requires-dist = [
     { name = "transformers", specifier = "==4.36.2" },
     { name = "tts", specifier = "==0.21.3" },
     { name = "uvicorn", specifier = ">=0.28.0" },
+    { name = "vector-quantize-pytorch", specifier = ">=1.28.1" },
+    { name = "vocos", specifier = ">=0.1.0" },
 ]
 
 [[package]]

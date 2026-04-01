@@ -18,11 +18,12 @@ for _d in [AUDIO_DIR, VIDEOS_DIR, OUTPUTS_DIR, MANIM_SCENES_DIR, TEMP_DIR]:
 
 # LLM & EMBEDDING
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+
 
 # Chatting LLM
 llm = ChatOpenAI(
-    model=OPENAI_MODEL,
+    model="gpt-4o-mini",
     temperature=0,
     streaming=True,
     api_key=OPENAI_API_KEY
@@ -34,24 +35,24 @@ EMBEDDING = OpenAIEmbeddings(
     api_key=OPENAI_API_KEY
 )
 
+
+
 # PROVIDER & PIPELINE SETTINGS
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "openai")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+TTS_PROVIDER = "gtts"
+ELEVENLABS_API_KEY = ""
+ELEVENLABS_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"
 
-TTS_PROVIDER = os.getenv("TTS_PROVIDER", "gtts")
-ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
-ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID", "21m00Tcm4TlvDq8ikWAM")
+MANIM_QUALITY = "high_quality"
+MANIM_PREVIEW = False
 
-MANIM_QUALITY = os.getenv("MANIM_QUALITY", "medium_quality")   
-MANIM_PREVIEW = os.getenv("MANIM_PREVIEW", "False").lower() == "true"
-
-VIDEO_RESOLUTION = os.getenv("VIDEO_RESOLUTION", "1080x1920") 
-VIDEO_FPS = int(os.getenv("VIDEO_FPS", "30"))
+VIDEO_RESOLUTION = "1080x1920"
+VIDEO_FPS = 60
 VIDEO_OUTPUT_NAME = "final_video.mp4"
 
-MAX_SCENES = int(os.getenv("MAX_SCENES", "6"))
-MIN_SCENE_DURATION = float(os.getenv("MIN_SCENE_DURATION", "2.0"))
+MAX_SCENES = 6
+MIN_SCENE_DURATION = 2.0
+
+
 
 
 # HELPER FUNCTIONS (Replacement for ModelLoader class)
@@ -65,18 +66,12 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
     response = llm.invoke(messages)
     return response.content
 
-def call_ollama(system_prompt: str, user_prompt: str) -> str:
-    """Directly calls Ollama API."""
-    import requests
-    payload = {
-        "model": OLLAMA_MODEL,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "stream": False,
-        "format": "json",
-    }
-    r = requests.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload, timeout=120)
-    r.raise_for_status()
-    return r.json()["message"]["content"]
+
+
+
+
+def generate_text(system_prompt: str, user_prompt: str) -> str:
+    """
+    Unified entry point for text generation (OpenAI).
+    """
+    return call_llm(system_prompt, user_prompt)
