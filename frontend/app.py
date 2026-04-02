@@ -318,8 +318,8 @@ if custom_generate_btn:
                 "script": script_text.strip(),
                 "tts_provider": tts_custom,
             }
-            # Use stream=True for real-time tactical feedback
-            with requests.post(backend_custom_url, json=payload, stream=True, timeout=600) as response:
+            # Use stream=True for real-time tactical feedback. Timeout set to None for long Manim renders.
+            with requests.post(backend_custom_url, json=payload, stream=True, timeout=None) as response:
                 if response.status_code == 200:
                     for line in response.iter_lines():
                         if line:

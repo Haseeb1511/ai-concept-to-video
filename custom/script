@@ -1,46 +1,75 @@
-[Scene 1 | 0–5s]
-"How does AI actually understand language?"
-"Not just words… but meaning between the lines."
-"Let me show you the secret behind ChatGPT."
+[Scene 1 | 0–4s]
+Your neural network is learning NOTHING.
+Weights are updating. Loss is dropping.
+But the model is basically dead.
 
-[Scene 2 | 5–15s]
-"Take this sentence:"
-"'The bank by the river.'"
-"Wait… what does 'bank' mean here?"
-"A money bank… or the side of a river?"
+[Scene 2 | 4–8s]
+The culprit? A bad activation function.
+Today we fix that — with ReLU.
 
-[Scene 3 | 15–30s]
-"Humans use context naturally."
-"But how does AI do it?"
-"Using something called Self-Attention."
-"Where every word looks at every other word."
+[Scene 3 | 8–14s]
+Neural networks are just stacked linear equations.
+But the real world is NOT linear.
+No matter how many layers you add —
+they all collapse into one linear transformation.
 
-[Scene 4 | 30–50s]
-"Each word gets three roles:"
-"Query — what am I looking for?"
-"Key — what do I match with?"
-"Value — what information do I carry?"
+[Scene 4 | 14–20s]
+Activation functions inject non-linearity.
+The secret ingredient that lets networks
+learn curves, edges, faces, and language.
 
-[Scene 5 | 50–70s]
-"Now comes the magic."
-"Each word compares its Query with all other Keys."
-"This creates attention scores — showing relevance."
-"And suddenly… 'bank' connects strongly to 'river'."
+[Scene 5 | 20–27s]
+ReLU stands for Rectified Linear Unit.
+The formula is almost insultingly simple:
+f of x equals the max of zero and x.
+That's it.
 
-[Scene 6 | 70–90s]
-"These scores are used to combine information."
-"So 'bank' is no longer ambiguous."
-"It now understands: river bank."
+[Scene 6 | 27–34s]
+If the input is positive — pass it through unchanged.
+If it's negative — kill it. Output zero.
+Positive: pass. Negative: zero.
 
-[Scene 7 | 90–105s]
-"And this happens for EVERY word…"
-"All at the same time."
-"That’s how AI understands entire sentences instantly."
+[Scene 7 | 34–42s]
+On a graph, ReLU looks like a hockey stick.
+Everything left of zero is flat — a dead zone.
+Everything right is a diagonal with slope one.
 
-[Scene 8 | 105–115s]
-"That’s Self-Attention."
-"The core idea behind modern AI."
+[Scene 8 | 42–48s]
+That single kink at the origin —
+that's what gives the entire network its non-linearity.
 
-[Scene 9 | 115–120s]
-"Thanks for watching!"
-"Subscribe for more AI explained simply."
+[Scene 9 | 48–57s]
+The old default was Sigmoid.
+It squishes everything between zero and one.
+Sounds fine — but it destroys gradients.
+During backprop, tiny gradients get multiplied
+layer after layer — until they vanish.
+
+[Scene 10 | 57–63s]
+ReLU has a gradient of exactly one
+for all positive inputs.
+No squishing. No vanishing. Early layers actually learn.
+
+[Scene 11 | 63–72s]
+ReLU isn't perfect though.
+If a neuron's input is always negative —
+from bad weight init or a large learning rate —
+it always outputs zero. Gradient is zero.
+It NEVER updates. This is called a Dead Neuron.
+
+[Scene 12 | 72–78s]
+The fix? Leaky ReLU.
+Instead of zero for negative inputs,
+give them a tiny slope of 0.01.
+The neuron stays alive.
+
+[Scene 13 | 78–88s]
+ReLU is the default activation
+in almost every modern deep learning architecture.
+ResNets. VGGs. Transformer feed-forward layers.
+Fast to compute. Sparse. Powerful.
+
+[Scene 14 | 88–95s]
+Next time you build a hidden layer —
+just use ReLU.
+And your network will actually learn.

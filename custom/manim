@@ -1,151 +1,677 @@
-from manim import *
-import json
-import os
-
 class RenderScene(Scene):
     def construct(self):
-        data = json.loads(os.environ.get("SCENE_DATA", "{}"))
-        scene_id = data.get("scene_id", 1)
-        duration = data.get("duration", 5.0)
+        data      = json.loads(os.environ["SCENE_DATA"])
+        duration  = data["duration"]
+        scene_id  = data["scene_id"]
 
-        # Colors
-        BG = "#0A0A14"
-        ACCENT = "#A29BFE"
-        QUERY_C = "#FF6B6B"
-        KEY_C = "#4ECDC4"
-        VALUE_C = "#FFE66D"
+        # ── Palette ───────────────────────────────────────────────
+        C_BG      = "#08080F"
+        C_BRAND   = "#7B61FF"
+        C_ACCENT  = "#FF6B6B"
+        C_GREEN   = "#6BFF9E"
+        C_GOLD    = "#FFD93D"
+        C_LGRAY   = "#AAAAAA"
+        self.camera.background_color = C_BG
 
-        self.camera.background_color = BG
+        # ── Frame constants (1080x1920 → ~5.4w x 9.6h MU) ────────
+        # Safe usable region: x ∈ [-2.5, 2.5], y ∈ [-4.2, 4.2]
+        TOP    =  4.0
+        BOT    = -4.0
+        LEFT   = -2.5
+        RIGHT  =  2.5
+        CX     =  0.0
 
-        # ---------------- SCENE 1 (HOOK) ----------------
+        # ── Helper: fit text to safe width ───────────────────────
+        def T(content, color=WHITE, bold=False, mono=False):
+            kw = {"weight": BOLD} if bold else {}
+            if mono:
+                kw["font"] = "Monospace"
+            t = Text(content, color=color, **kw)
+            if t.width > 4.8:
+                t.scale_to_fit_width(4.8)
+            return t
+
+        def Tsub(content, color=C_LGRAY):
+            t = Text(content, color=color)
+            t.scale_to_fit_width(4.4)
+            return t
+
+        def Pill(label, col, w=4.8, h=0.72):
+            box = RoundedRectangle(
+                width=w, height=h, corner_radius=0.18,
+                color=col, fill_color=col, fill_opacity=0.15,
+                stroke_width=1.8
+            )
+            lbl = Text(label, color=col)
+            if lbl.width > w - 0.3:
+                lbl.scale_to_fit_width(w - 0.3)
+            lbl.move_to(box.get_center())
+            return VGroup(box, lbl)
+
+        def Stack(*items, buff=0.35, cy=0.0):
+            g = VGroup(*items).arrange(DOWN, buff=buff)
+            g.move_to([CX, cy, 0])
+            return g
+
+        at = 0.0  # running animation time tracker
+
+        def w(t):
+            nonlocal at
+            self.wait(t)
+            at += t
+
+        def p(anim, rt=0.5):
+            nonlocal at
+            self.play(anim, run_time=rt)
+            at += rt
+
+        def pp(*anims, rt=0.5):
+            nonlocal at
+            self.play(*anims, run_time=rt)
+            at += rt
+
+        def rest():
+            r = duration - at
+            if r > 0.05:
+                self.wait(r)
+
+        # ══════════════════════════════════════════════════════════
+        # S1 | 0-4s  "Network is DEAD"
+        # ══════════════════════════════════════════════════════════
         if scene_id == 1:
-            title = Text("How AI Understands Language", font_size=48, color=ACCENT)
-            sub = Text("The Secret of Self-Attention", font_size=30)
+            # 3 neuron columns: input → hidden → output
+            col_xs  = [-2.0, 0.0, 2.0]
+            counts  = [3, 4, 2]
+            radii   = 0.28
+            neurons = []
+            for ci, (cx_val, cnt) in enumerate(zip(col_xs, counts)):
+                col_nodes = []
+                total_h   = (cnt - 1) * 0.9
+                for ni in range(cnt):
+                    y = total_h / 2 - ni * 0.9
+                    c = Circle(radius=radii, color=C_BRAND,
+                               fill_color=C_BRAND, fill_opacity=0.15,
+                               stroke_width=1.8)
+                    c.move_to([cx_val, y + 0.8, 0])
+                    col_nodes.append(c)
+                neurons.append(col_nodes)
 
-            VGroup(title, sub).arrange(DOWN).move_to(ORIGIN)
+            # Connections (dim)
+            edges = VGroup()
+            for ci in range(2):
+                for a in neurons[ci]:
+                    for b in neurons[ci + 1]:
+                        edges.add(
+                            Line(a.get_center(), b.get_center(),
+                                 color=C_BRAND, stroke_width=0.6,
+                                 stroke_opacity=0.25)
+                        )
 
-            self.play(Write(title), run_time=2)
-            self.play(FadeIn(sub), run_time=1.5)
+            all_nodes = VGroup(*[c for col in neurons for c in col])
 
-        # ---------------- SCENE 2 (AMBIGUITY) ----------------
+            pp(Create(edges), FadeIn(all_nodes, scale=0.6), rt=0.9)
+
+            # "DEAD" label
+            dead = T("DEAD", color=C_ACCENT, bold=True)
+            dead.scale_to_fit_width(3.6)
+            dead.move_to([CX, -1.2, 0])
+            p(Write(dead), rt=0.5)
+
+            # Skull overlay on hidden neurons
+            for c in neurons[1]:
+                c.generate_target()
+                c.target.set_fill(C_ACCENT, opacity=0.3)
+                c.target.set_stroke(C_ACCENT)
+            p(LaggedStart(*[MoveToTarget(c) for c in neurons[1]],
+                          lag_ratio=0.12), rt=0.5)
+
+            sub = Tsub("Weights updating. Loss dropping.")
+            sub.move_to([CX, -2.2, 0])
+            p(FadeIn(sub, shift=UP * 0.2), rt=0.4)
+
+            rest()
+
+        # ══════════════════════════════════════════════════════════
+        # S2 | 4-8s  "Culprit & Intro ReLU"
+        # ══════════════════════════════════════════════════════════
         elif scene_id == 2:
-            sentence = Text("The bank by the river", font_size=36)
-            self.play(Write(sentence))
+            title = T("The Culprit?", color=C_ACCENT, bold=True)
+            title.move_to([CX, 2.8, 0])
+            p(FadeIn(title, shift=DOWN * 0.3), rt=0.5)
 
-            self.wait(1)
+            bad_pill = Pill("Bad Activation Function", C_ACCENT, w=4.6)
+            bad_pill.move_to([CX, 1.4, 0])
+            p(FadeIn(bad_pill, scale=0.8), rt=0.5)
 
-            bank = sentence[4:8]
-            self.play(bank.animate.set_color(QUERY_C).scale(1.2))
+            arrow = Arrow([CX, 0.6, 0], [CX, -0.1, 0],
+                          color=C_GREEN, stroke_width=3, buff=0.0)
+            p(GrowArrow(arrow), rt=0.4)
 
-            q1 = Text("Money Bank?", font_size=28).to_edge(LEFT)
-            q2 = Text("River Bank?", font_size=28).to_edge(RIGHT)
+            fix = T("ReLU", color=C_GREEN, bold=True)
+            fix.scale_to_fit_width(3.2)
+            fix.move_to([CX, -0.7, 0])
+            p(Write(fix), rt=0.5)
 
-            self.play(FadeIn(q1), FadeIn(q2))
+            tagline = Tsub("Rectified Linear Unit")
+            tagline.move_to([CX, -1.65, 0])
+            p(FadeIn(tagline, shift=UP * 0.15), rt=0.4)
 
-        # ---------------- SCENE 3 (CONTEXT IDEA) ----------------
+            rest()
+
+        # ══════════════════════════════════════════════════════════
+        # S3 | 8-14s  "Linear collapse problem"
+        # ══════════════════════════════════════════════════════════
         elif scene_id == 3:
-            words = ["The", "bank", "by", "the", "river"]
+            title = T("The Problem", color=C_GOLD, bold=True)
+            title.move_to([CX, 3.5, 0])
+            p(Write(title), rt=0.4)
 
-            nodes = VGroup(*[
-                Circle(radius=0.5) for _ in words
-            ]).arrange(RIGHT, buff=1)
+            layer_labels = ["Layer 1", "Layer 2", "Layer 3"]
+            layer_eqs    = ["W₁x + b₁", "W₂(·) + b₂", "W₃(·) + b₃"]
+            boxes        = VGroup()
+            ys_box       = [1.8, 0.5, -0.8]
 
-            labels = VGroup(*[
-                Text(w, font_size=20).move_to(n)
-                for w, n in zip(words, nodes)
-            ])
+            for i, (lbl, eq, yb) in enumerate(zip(layer_labels, layer_eqs, ys_box)):
+                box = RoundedRectangle(width=4.4, height=0.78,
+                                       corner_radius=0.14,
+                                       color=C_BRAND,
+                                       fill_color=C_BRAND,
+                                       fill_opacity=0.14,
+                                       stroke_width=1.5)
+                box.move_to([CX, yb, 0])
+                top_lbl = Text(lbl, color=C_LGRAY, font_size=20)
+                top_lbl.move_to(box.get_center() + UP * 0.14)
+                eq_lbl  = Text(eq,  color=C_BRAND,  font_size=22,
+                               font="Monospace")
+                eq_lbl.move_to(box.get_center() + DOWN * 0.14)
+                if eq_lbl.width > 4.0:
+                    eq_lbl.scale_to_fit_width(4.0)
+                boxes.add(VGroup(box, top_lbl, eq_lbl))
 
-            self.play(LaggedStartMap(Create, nodes), FadeIn(labels))
+            pp(LaggedStart(*[FadeIn(b, shift=RIGHT * 0.3) for b in boxes],
+                           lag_ratio=0.2), rt=0.9)
 
-            # connect all
-            lines = VGroup()
-            for i in range(len(nodes)):
-                for j in range(len(nodes)):
-                    if i != j:
-                        lines.add(Line(nodes[i], nodes[j], stroke_opacity=0.2))
+            # Collapse arrow
+            col_arrow = Arrow([CX, -1.5, 0], [CX, -2.2, 0],
+                              color=C_ACCENT, stroke_width=3, buff=0.0)
+            collapse = Pill("= Wₙₑₜ · x  (still linear!)", C_ACCENT, w=4.6)
+            collapse.move_to([CX, -3.0, 0])
+            p(GrowArrow(col_arrow), rt=0.35)
+            p(FadeIn(collapse, scale=0.85), rt=0.45)
 
-            self.play(Create(lines), run_time=2)
+            rest()
 
-        # ---------------- SCENE 4 (QKV) ----------------
+        # ══════════════════════════════════════════════════════════
+        # S4 | 14-20s  "Non-linearity"
+        # ══════════════════════════════════════════════════════════
         elif scene_id == 4:
-            q = Circle(color=QUERY_C).shift(UP*2)
-            k = Circle(color=KEY_C)
-            v = Circle(color=VALUE_C).shift(DOWN*2)
+            title = T("Non-Linearity", color=C_GREEN, bold=True)
+            title.move_to([CX, 3.5, 0])
+            p(Write(title), rt=0.4)
 
-            self.play(Create(q), Create(k), Create(v))
+            tagline = Tsub("The secret ingredient")
+            tagline.move_to([CX, 2.7, 0])
+            p(FadeIn(tagline), rt=0.3)
 
-            self.play(
-                Write(Text("Query", font_size=24).move_to(q)),
-                Write(Text("Key", font_size=24).move_to(k)),
-                Write(Text("Value", font_size=24).move_to(v)),
+            things = ["Curves", "Edges", "Faces", "Language"]
+            cols   = [C_BRAND, C_GOLD, C_GREEN, C_ACCENT]
+            pills  = VGroup(*[
+                Pill(th, col, w=3.6, h=0.7)
+                for th, col in zip(things, cols)
+            ]).arrange(DOWN, buff=0.42).move_to([CX, 0.6, 0])
+
+            pp(LaggedStart(*[FadeIn(p_obj, shift=UP * 0.25) for p_obj in pills],
+                           lag_ratio=0.2), rt=1.0)
+
+            note = Tsub("Activation functions make this possible.")
+            note.move_to([CX, -2.3, 0])
+            p(FadeIn(note, shift=UP * 0.15), rt=0.4)
+
+            rest()
+
+        # ══════════════════════════════════════════════════════════
+        # S5 | 20-27s  "ReLU Formula"
+        # ══════════════════════════════════════════════════════════
+        elif scene_id == 5:
+            title = T("The ReLU Formula", color=C_BRAND, bold=True)
+            title.move_to([CX, 3.5, 0])
+            p(Write(title), rt=0.4)
+
+            # Formula box
+            f_box = RoundedRectangle(width=4.8, height=1.3, corner_radius=0.2,
+                                     color=C_GREEN, fill_color=C_GREEN,
+                                     fill_opacity=0.12, stroke_width=2.0)
+            f_box.move_to([CX, 2.2, 0])
+            f_text = Text("f(x) = max(0, x)",
+                          color=C_GREEN, font="Monospace")
+            f_text.scale_to_fit_width(4.2)
+            f_text.move_to(f_box.get_center())
+            pp(Create(f_box), Write(f_text), rt=0.8)
+
+            hint = Tsub("Almost insultingly simple.")
+            hint.move_to([CX, 1.1, 0])
+            p(FadeIn(hint, shift=UP * 0.15), rt=0.35)
+
+            # Two-rule breakdown
+            rule_pos = Pill("x > 0  →  output = x",   C_GREEN,  w=4.4, h=0.72)
+            rule_neg = Pill("x < 0  →  output = 0",   C_ACCENT, w=4.4, h=0.72)
+            rule_pos.move_to([CX, 0.0, 0])
+            rule_neg.move_to([CX, -0.95, 0])
+            p(FadeIn(rule_pos, shift=RIGHT * 0.3), rt=0.4)
+            p(FadeIn(rule_neg, shift=RIGHT * 0.3), rt=0.4)
+
+            rest()
+
+        # ══════════════════════════════════════════════════════════
+        # S6 | 27-34s  "Positive / Negative examples"
+        # ══════════════════════════════════════════════════════════
+        elif scene_id == 6:
+            title = T("How ReLU Works", color=C_BRAND, bold=True)
+            title.move_to([CX, 3.5, 0])
+            p(Write(title), rt=0.4)
+
+            # Positive example
+            p_title = Text("Positive Input", color=C_GREEN, font_size=26)
+            p_title.move_to([CX, 2.5, 0])
+            p(FadeIn(p_title), rt=0.3)
+
+            in_box_p = RoundedRectangle(width=1.8, height=0.65, corner_radius=0.14,
+                                        color=C_GREEN, fill_color=C_GREEN, fill_opacity=0.15)
+            in_box_p.move_to([-1.5, 1.55, 0])
+            in_lbl_p = Text("x = +5", color=C_GREEN, font="Monospace", font_size=24)
+            in_lbl_p.move_to(in_box_p.get_center())
+
+            arr_p = Arrow([-0.55, 1.55, 0], [0.35, 1.55, 0],
+                          color=C_GREEN, stroke_width=2.5, buff=0.0)
+
+            out_box_p = RoundedRectangle(width=1.8, height=0.65, corner_radius=0.14,
+                                         color=C_GREEN, fill_color=C_GREEN, fill_opacity=0.15)
+            out_box_p.move_to([1.5, 1.55, 0])
+            out_lbl_p = Text("out = 5", color=C_GREEN, font="Monospace", font_size=24)
+            out_lbl_p.move_to(out_box_p.get_center())
+
+            pp(FadeIn(in_box_p), Write(in_lbl_p), rt=0.35)
+            pp(GrowArrow(arr_p), rt=0.3)
+            pp(FadeIn(out_box_p), Write(out_lbl_p), rt=0.35)
+
+            # Divider
+            div = Line([-2.3, 0.7, 0], [2.3, 0.7, 0],
+                       color=GRAY, stroke_width=0.8, stroke_opacity=0.5)
+            p(Create(div), rt=0.2)
+
+            # Negative example
+            n_title = Text("Negative Input", color=C_ACCENT, font_size=26)
+            n_title.move_to([CX, 0.2, 0])
+            p(FadeIn(n_title), rt=0.3)
+
+            in_box_n = RoundedRectangle(width=1.8, height=0.65, corner_radius=0.14,
+                                        color=C_ACCENT, fill_color=C_ACCENT, fill_opacity=0.15)
+            in_box_n.move_to([-1.5, -0.75, 0])
+            in_lbl_n = Text("x = -3", color=C_ACCENT, font="Monospace", font_size=24)
+            in_lbl_n.move_to(in_box_n.get_center())
+
+            arr_n = Arrow([-0.55, -0.75, 0], [0.35, -0.75, 0],
+                          color=C_ACCENT, stroke_width=2.5, buff=0.0)
+
+            out_box_n = RoundedRectangle(width=1.8, height=0.65, corner_radius=0.14,
+                                         color=C_ACCENT, fill_color=C_ACCENT, fill_opacity=0.15)
+            out_box_n.move_to([1.5, -0.75, 0])
+            out_lbl_n = Text("out = 0", color=C_ACCENT, font="Monospace", font_size=24)
+            out_lbl_n.move_to(out_box_n.get_center())
+
+            pp(FadeIn(in_box_n), Write(in_lbl_n), rt=0.35)
+            pp(GrowArrow(arr_n), rt=0.3)
+            pp(FadeIn(out_box_n), Write(out_lbl_n), rt=0.35)
+
+            killed = Text("Killed.", color=C_ACCENT, font_size=22)
+            killed.move_to([CX, -1.7, 0])
+            p(FadeIn(killed, shift=UP * 0.1), rt=0.3)
+
+            rest()
+
+        # ══════════════════════════════════════════════════════════
+        # S7 | 34-42s  "Hockey-stick graph"
+        # ══════════════════════════════════════════════════════════
+        elif scene_id == 7:
+            title = T("The ReLU Graph", color=C_BRAND, bold=True)
+            title.move_to([CX, 3.8, 0])
+            p(Write(title), rt=0.4)
+
+            axes = Axes(
+                x_range=[-3, 3, 1],
+                y_range=[-0.3, 3, 1],
+                x_length=5.0,
+                y_length=4.2,
+                axis_config={
+                    "color": C_LGRAY,
+                    "stroke_width": 1.5,
+                    "include_numbers": True,
+                    "decimal_number_config": {
+                        "color": C_LGRAY,
+                        "num_decimal_places": 0,
+                        "font_size": 20,
+                    },
+                },
+            ).move_to([CX, 0.3, 0])
+
+            x_lbl = Text("x",    color=C_LGRAY, font_size=22)
+            y_lbl = Text("f(x)", color=C_LGRAY, font_size=22)
+            x_lbl.next_to(axes.x_axis.get_right(), RIGHT, buff=0.15)
+            y_lbl.next_to(axes.y_axis.get_top(),   UP,    buff=0.12)
+
+            p(Create(axes), rt=0.7)
+            pp(Write(x_lbl), Write(y_lbl), rt=0.3)
+
+            relu_plot = axes.plot(lambda x: max(0.0, x),
+                                  color=C_GREEN, stroke_width=3.5)
+            p(Create(relu_plot), rt=0.7)
+
+            # Dead zone annotation
+            dead_line = axes.plot(lambda x: 0.0, x_range=[-3, 0],
+                                  color=C_ACCENT, stroke_width=2.5,
+                                  stroke_opacity=0.7)
+            dead_lbl = Text("Dead Zone", color=C_ACCENT, font_size=20)
+            dead_lbl.move_to(axes.c2p(-1.8, -0.22))
+            pp(Create(dead_line), FadeIn(dead_lbl), rt=0.5)
+
+            # Slope annotation
+            slope_lbl = Text("slope = 1", color=C_GREEN, font_size=20)
+            slope_lbl.move_to(axes.c2p(1.6, 1.9))
+            p(FadeIn(slope_lbl), rt=0.3)
+
+            hockey = Text('"Hockey Stick"', color=C_GOLD, font_size=22)
+            hockey.move_to([CX, -2.55, 0])
+            p(FadeIn(hockey, shift=UP * 0.15), rt=0.3)
+
+            rest()
+
+        # ══════════════════════════════════════════════════════════
+        # S8 | 42-48s  "The kink = non-linearity"
+        # ══════════════════════════════════════════════════════════
+        elif scene_id == 8:
+            title = T("The Magic Kink", color=C_GOLD, bold=True)
+            title.move_to([CX, 3.5, 0])
+            p(Write(title), rt=0.4)
+
+            axes = Axes(
+                x_range=[-2.5, 2.5, 1],
+                y_range=[-0.3, 2.5, 1],
+                x_length=4.6,
+                y_length=3.6,
+                axis_config={
+                    "color": C_LGRAY, "stroke_width": 1.5,
+                    "include_numbers": False,
+                },
+            ).move_to([CX, 0.6, 0])
+
+            relu_plot = axes.plot(lambda x: max(0.0, x),
+                                  color=C_GREEN, stroke_width=3.5)
+            pp(Create(axes), Create(relu_plot), rt=0.7)
+
+            # Dot at origin
+            origin_dot = Dot(axes.c2p(0, 0), color=C_GOLD, radius=0.12)
+            kink_lbl   = Text("kink at origin", color=C_GOLD, font_size=22)
+            kink_lbl.next_to(origin_dot, UR, buff=0.2)
+            pp(FadeIn(origin_dot, scale=0.3), Write(kink_lbl), rt=0.5)
+
+            note = Tsub("This single point breaks linearity.")
+            note.move_to([CX, -1.55, 0])
+            p(FadeIn(note, shift=UP * 0.15), rt=0.4)
+
+            note2 = Tsub("Without it: just a straight line.")
+            note2.move_to([CX, -2.3, 0])
+            p(FadeIn(note2, shift=UP * 0.1), rt=0.35)
+
+            rest()
+
+        # ══════════════════════════════════════════════════════════
+        # S9 | 48-57s  "Sigmoid & vanishing gradients"
+        # ══════════════════════════════════════════════════════════
+        elif scene_id == 9:
+            title = T("Sigmoid's Problem", color=C_ACCENT, bold=True)
+            title.move_to([CX, 3.8, 0])
+            p(Write(title), rt=0.4)
+
+            axes = Axes(
+                x_range=[-5, 5, 1],
+                y_range=[-0.1, 1.2, 0.5],
+                x_length=5.0,
+                y_length=2.4,
+                axis_config={
+                    "color": C_LGRAY, "stroke_width": 1.2,
+                    "include_numbers": False,
+                },
+            ).move_to([CX, 1.8, 0])
+
+            sigmoid = axes.plot(
+                lambda x: 1 / (1 + 2.71828 ** (-x)),
+                color=C_ACCENT, stroke_width=3.0
+            )
+            sig_lbl = Text("Sigmoid", color=C_ACCENT, font_size=22)
+            sig_lbl.next_to(axes, UP, buff=0.08)
+
+            pp(Create(axes), Create(sigmoid), rt=0.7)
+            p(FadeIn(sig_lbl), rt=0.3)
+
+            # Gradient shrinking arrows
+            grad_title = Text("Gradient through layers:", color=C_LGRAY, font_size=22)
+            grad_title.move_to([CX, 0.35, 0])
+            p(FadeIn(grad_title), rt=0.3)
+
+            widths  = [1.4, 0.95, 0.55, 0.22]
+            g_arrows = VGroup()
+            for i, ww in enumerate(widths):
+                arr = Arrow(
+                    ORIGIN, RIGHT * ww,
+                    color=C_ACCENT, stroke_width=max(1.0, ww * 3.5),
+                    buff=0.0
+                ).move_to([(i - 1.5) * 1.1, -0.45, 0])
+                g_arrows.add(arr)
+
+            pp(LaggedStart(*[GrowArrow(a) for a in g_arrows], lag_ratio=0.2), rt=0.6)
+
+            vanish = Text("→ Gradients vanish!", color=C_ACCENT, font_size=24)
+            vanish.move_to([CX, -1.3, 0])
+            p(Write(vanish), rt=0.4)
+
+            early = Tsub("Early layers learn nothing.")
+            early.move_to([CX, -2.1, 0])
+            p(FadeIn(early, shift=UP * 0.1), rt=0.35)
+
+            rest()
+
+        # ══════════════════════════════════════════════════════════
+        # S10 | 57-63s  "ReLU gradient = 1"
+        # ══════════════════════════════════════════════════════════
+        elif scene_id == 10:
+            title = T("ReLU to the Rescue", color=C_GREEN, bold=True)
+            title.move_to([CX, 3.5, 0])
+            p(Write(title), rt=0.4)
+
+            # Gradient comparison table
+            headers = ["Function", "Gradient"]
+            h_row = VGroup(
+                Text(headers[0], color=C_LGRAY, font_size=24).move_to([-1.2, 2.5, 0]),
+                Text(headers[1], color=C_LGRAY, font_size=24).move_to([ 1.2, 2.5, 0]),
+            )
+            p(FadeIn(h_row), rt=0.3)
+
+            div = Line([-2.4, 2.1, 0], [2.4, 2.1, 0],
+                       color=GRAY, stroke_width=0.8)
+            p(Create(div), rt=0.2)
+
+            rows = [
+                ("Sigmoid", "< 0.25",  C_ACCENT),
+                ("Tanh",    "< 1.0",   C_GOLD),
+                ("ReLU",    "= 1.0",   C_GREEN),
+            ]
+            for i, (fn, grad, col) in enumerate(rows):
+                y = 1.35 - i * 0.95
+                fn_t   = Text(fn,   color=col, font_size=26)
+                grad_t = Text(grad, color=col, font="Monospace", font_size=26)
+                fn_t.move_to(  [-1.2, y, 0])
+                grad_t.move_to([ 1.2, y, 0])
+                pp(FadeIn(fn_t), FadeIn(grad_t), rt=0.35)
+
+            highlight = SurroundingRectangle(
+                VGroup(
+                    Text("ReLU", color=C_GREEN, font_size=26).move_to([-1.2, -0.55, 0]),
+                ),
+                color=C_GREEN, buff=0.55, stroke_width=2.0,
+                corner_radius=0.12
+            )
+            highlight.move_to([CX, -0.55, 0])
+            p(Create(highlight), rt=0.35)
+
+            note = Tsub("No squishing. No vanishing.")
+            note.move_to([CX, -1.85, 0])
+            p(FadeIn(note, shift=UP * 0.15), rt=0.35)
+
+            note2 = Tsub("Every layer learns.")
+            note2.move_to([CX, -2.6, 0])
+            p(FadeIn(note2, shift=UP * 0.1), rt=0.3)
+
+            rest()
+
+        # ══════════════════════════════════════════════════════════
+        # S11 | 63-72s  "Dead Neuron"
+        # ══════════════════════════════════════════════════════════
+        elif scene_id == 11:
+            title = T("The Dead Neuron", color=C_ACCENT, bold=True)
+            title.move_to([CX, 3.5, 0])
+            p(Write(title), rt=0.4)
+
+            neuron = Circle(radius=0.55, color=C_ACCENT,
+                            fill_color=C_ACCENT, fill_opacity=0.18,
+                            stroke_width=2.0)
+            neuron.move_to([CX, 2.15, 0])
+            n_lbl = Text("Neuron", color=WHITE, font_size=24)
+            n_lbl.move_to(neuron.get_center())
+            pp(Create(neuron), Write(n_lbl), rt=0.5)
+
+            steps = [
+                ("Input always < 0",      C_ACCENT,  0.85),
+                ("Output = 0  always",    C_ACCENT, -0.15),
+                ("Gradient = 0  always",  C_ACCENT, -1.15),
+                ("Weight never updates!", C_ACCENT, -2.15),
+            ]
+            for txt, col, y in steps:
+                obj = Text(txt, color=col, font_size=24)
+                if obj.width > 4.6:
+                    obj.scale_to_fit_width(4.6)
+                obj.move_to([CX, y, 0])
+                p(FadeIn(obj, shift=RIGHT * 0.25), rt=0.38)
+
+            cross = Cross(neuron, color=RED, stroke_width=4.5)
+            p(Create(cross), rt=0.4)
+
+            rest()
+
+        # ══════════════════════════════════════════════════════════
+        # S12 | 72-78s  "Leaky ReLU fix"
+        # ══════════════════════════════════════════════════════════
+        elif scene_id == 12:
+            title = T("Fix: Leaky ReLU", color=C_GREEN, bold=True)
+            title.move_to([CX, 3.5, 0])
+            p(Write(title), rt=0.4)
+
+            axes = Axes(
+                x_range=[-3, 3, 1],
+                y_range=[-0.6, 3, 1],
+                x_length=5.0,
+                y_length=4.0,
+                axis_config={
+                    "color": C_LGRAY, "stroke_width": 1.5,
+                    "include_numbers": False,
+                },
+            ).move_to([CX, 0.2, 0])
+
+            relu_plot = axes.plot(
+                lambda x: max(0.0, x),
+                color=C_ACCENT, stroke_width=2.5,
+                stroke_opacity=0.5
+            )
+            leaky_plot = axes.plot(
+                lambda x: x if x >= 0 else 0.01 * x,
+                color=C_GREEN, stroke_width=3.5
             )
 
-        # ---------------- SCENE 5 (ATTENTION SCORES) ----------------
-        elif scene_id == 5:
-            q = Circle(radius=0.5, color=QUERY_C).shift(LEFT*3)
+            relu_lbl  = Text("ReLU",       color=C_ACCENT, font_size=22)
+            leaky_lbl = Text("Leaky ReLU", color=C_GREEN,  font_size=22)
+            relu_lbl.move_to( axes.c2p(1.8,  1.3))
+            leaky_lbl.move_to(axes.c2p(1.8,  2.2))
 
-            keys = VGroup(*[
-                Circle(radius=0.5, color=KEY_C).shift(RIGHT*2 + UP*i)
-                for i in [-1, 0, 1]
-            ])
+            pp(Create(axes), rt=0.5)
+            pp(Create(relu_plot),  FadeIn(relu_lbl),  rt=0.5)
+            pp(Create(leaky_plot), FadeIn(leaky_lbl), rt=0.5)
 
-            self.play(Create(q), LaggedStartMap(Create, keys))
+            # Tiny slope label on negative side
+            slope_lbl = Text("slope = 0.01", color=C_GREEN, font_size=20)
+            slope_lbl.move_to(axes.c2p(-2.2, -0.32))
+            p(FadeIn(slope_lbl), rt=0.3)
 
-            arrows = VGroup(*[
-                Arrow(q.get_right(), k.get_left())
-                for k in keys
-            ])
+            fix_note = Tsub("Neuron stays alive. Problem solved.")
+            fix_note.move_to([CX, -2.55, 0])
+            p(FadeIn(fix_note, shift=UP * 0.15), rt=0.4)
 
-            self.play(LaggedStartMap(GrowArrow, arrows))
+            rest()
 
-            # highlight strongest
-            self.play(keys[1].animate.set_color(YELLOW).scale(1.3))
+        # ══════════════════════════════════════════════════════════
+        # S13 | 78-88s  "Used everywhere"
+        # ══════════════════════════════════════════════════════════
+        elif scene_id == 13:
+            title = T("ReLU in the Wild", color=C_BRAND, bold=True)
+            title.move_to([CX, 3.5, 0])
+            p(Write(title), rt=0.4)
 
-        # ---------------- SCENE 6 (WEIGHTED SUM) ----------------
-        elif scene_id == 6:
-            values = VGroup(*[
-                Circle(radius=0.4, color=VALUE_C)
-                for _ in range(5)
-            ]).arrange(RIGHT, buff=0.5)
+            archs = [
+                ("ResNet",              C_GREEN),
+                ("VGG",                 C_BRAND),
+                ("Transformer (FFN)",   C_GOLD),
+                ("YOLO",                "#FF9F43"),
+                ("EfficientNet",        C_ACCENT),
+            ]
+            arch_pills = VGroup(*[
+                Pill(name, col, w=4.4, h=0.72)
+                for name, col in archs
+            ]).arrange(DOWN, buff=0.32).move_to([CX, 0.7, 0])
 
-            self.play(FadeIn(values))
+            pp(LaggedStart(*[FadeIn(ap, shift=RIGHT * 0.35) for ap in arch_pills],
+                           lag_ratio=0.16), rt=1.1)
 
-            result = Circle(radius=0.8, color=VALUE_C)
+            props = Tsub("Fast  ·  Sparse  ·  Powerful")
+            props.move_to([CX, -2.3, 0])
+            p(FadeIn(props, shift=UP * 0.15), rt=0.4)
 
-            self.play(values.animate.move_to(result.get_center()), run_time=2)
-            self.play(GrowFromCenter(result))
+            rest()
 
-            self.play(Write(Text("Context", font_size=24).move_to(result)))
+        # ══════════════════════════════════════════════════════════
+        # S14 | 88-95s  "Call to action / outro"
+        # ══════════════════════════════════════════════════════════
+        elif scene_id == 14:
+            star = Text("*", color=C_GOLD, font_size=120, weight=BOLD)
+            star.move_to([CX, 2.8, 0])
+            p(FadeIn(star, scale=0.2), rt=0.5)
 
-        # ---------------- SCENE 7 (SIMULTANEOUS) ----------------
-        elif scene_id == 7:
-            words = ["The", "bank", "by", "the", "river"]
+            main = T("Use ReLU.", color=C_GREEN, bold=True)
+            main.scale_to_fit_width(4.4)
+            main.move_to([CX, 1.3, 0])
+            p(Write(main), rt=0.5)
 
-            nodes = VGroup(*[
-                Circle(radius=0.4) for _ in words
-            ]).arrange(RIGHT, buff=1)
+            sub1 = Tsub("Default for hidden layers.")
+            sub1.move_to([CX, 0.35, 0])
+            p(FadeIn(sub1, shift=UP * 0.15), rt=0.35)
 
-            self.play(LaggedStartMap(Create, nodes))
+            sub2 = Tsub("Your network will actually learn.")
+            sub2.move_to([CX, -0.4, 0])
+            p(FadeIn(sub2, shift=UP * 0.1), rt=0.35)
 
-            pulse = nodes.animate.scale(1.2)
-            self.play(pulse, rate_func=there_and_back, run_time=1.5)
+            recap = Pill("max(0, x)  — that's all it takes.", C_GREEN, w=4.8)
+            recap.move_to([CX, -1.5, 0])
+            p(FadeIn(recap, scale=0.85), rt=0.45)
 
-            text = Text("All words at once!", font_size=32, color=ACCENT).to_edge(DOWN)
-            self.play(Write(text))
+            p(Flash(recap[0].get_center(), color=C_GREEN,
+                    line_length=0.28, num_lines=10,
+                    flash_radius=0.9), rt=0.5)
 
-        # ---------------- SCENE 8 (SUMMARY) ----------------
-        elif scene_id == 8:
-            text = Text("Self-Attention = Understanding Context", font_size=36, color=ACCENT)
-            self.play(Write(text))
-
-        # ---------------- SCENE 9 (OUTRO) ----------------
-        elif scene_id == 9:
-            thanks = Text("Thanks for watching!", font_size=40, color=ACCENT)
-            sub = Text("Subscribe for more AI content", font_size=28)
-
-            VGroup(thanks, sub).arrange(DOWN)
-
-            self.play(Write(thanks))
-            self.play(FadeIn(sub))
-
-        self.wait(duration)
+            rest()
