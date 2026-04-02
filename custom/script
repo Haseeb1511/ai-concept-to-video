@@ -1,75 +1,23 @@
 [Scene 1 | 0–4s]
-Your neural network is learning NOTHING.
-Weights are updating. Loss is dropping.
-But the model is basically dead.
+"How does an AI read an entire sentence... all at once?"
 
-[Scene 2 | 4–8s]
-The culprit? A bad activation function.
-Today we fix that — with ReLU.
+[Scene 2 | 4–9s]
+"It uses something called Attention — but not just once. It does it multiple times, simultaneously."
 
-[Scene 3 | 8–14s]
-Neural networks are just stacked linear equations.
-But the real world is NOT linear.
-No matter how many layers you add —
-they all collapse into one linear transformation.
+[Scene 3 | 9–15s]
+"Imagine a sentence: 'The cat sat on the mat.' Each word looks at every other word and asks — how much do I care about you?"
 
-[Scene 4 | 14–20s]
-Activation functions inject non-linearity.
-The secret ingredient that lets networks
-learn curves, edges, faces, and language.
+[Scene 4 | 15–20s]
+"That's one attention head. But Multi-Head Attention runs eight of these in parallel — each one focusing on different relationships."
 
-[Scene 5 | 20–27s]
-ReLU stands for Rectified Linear Unit.
-The formula is almost insultingly simple:
-f of x equals the max of zero and x.
-That's it.
+[Scene 5 | 20–26s]
+"One head tracks grammar. Another tracks meaning. Another tracks position. They all learn different patterns."
 
-[Scene 6 | 27–34s]
-If the input is positive — pass it through unchanged.
-If it's negative — kill it. Output zero.
-Positive: pass. Negative: zero.
+[Scene 6 | 26–32s]
+"Then all their outputs are concatenated and projected into one powerful representation."
 
-[Scene 7 | 34–42s]
-On a graph, ReLU looks like a hockey stick.
-Everything left of zero is flat — a dead zone.
-Everything right is a diagonal with slope one.
+[Scene 7 | 32–37s]
+"That's why Transformers are so powerful. Multiple perspectives. One unified understanding."
 
-[Scene 8 | 42–48s]
-That single kink at the origin —
-that's what gives the entire network its non-linearity.
-
-[Scene 9 | 48–57s]
-The old default was Sigmoid.
-It squishes everything between zero and one.
-Sounds fine — but it destroys gradients.
-During backprop, tiny gradients get multiplied
-layer after layer — until they vanish.
-
-[Scene 10 | 57–63s]
-ReLU has a gradient of exactly one
-for all positive inputs.
-No squishing. No vanishing. Early layers actually learn.
-
-[Scene 11 | 63–72s]
-ReLU isn't perfect though.
-If a neuron's input is always negative —
-from bad weight init or a large learning rate —
-it always outputs zero. Gradient is zero.
-It NEVER updates. This is called a Dead Neuron.
-
-[Scene 12 | 72–78s]
-The fix? Leaky ReLU.
-Instead of zero for negative inputs,
-give them a tiny slope of 0.01.
-The neuron stays alive.
-
-[Scene 13 | 78–88s]
-ReLU is the default activation
-in almost every modern deep learning architecture.
-ResNets. VGGs. Transformer feed-forward layers.
-Fast to compute. Sparse. Powerful.
-
-[Scene 14 | 88–95s]
-Next time you build a hidden layer —
-just use ReLU.
-And your network will actually learn.
+[Scene 8 | 37–43s]
+"Thanks for watching! If you found this helpful, like this video and subscribe to Applie AI Lab for more AI concepts explained simply!"
