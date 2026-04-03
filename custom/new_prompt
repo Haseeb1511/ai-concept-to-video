@@ -26,7 +26,7 @@ Because of this pipeline, you must **STRICTLY follow all formatting and technica
 
 # 📥 INPUT TOPIC
 
-Explain Multi Head Attention in Transformers
+Generate a Manim YouTube Short script (8 scenes, 0–43s total) and full Python Manim code for the topic: "Sigmoid Activation Function". The Short answers: "Every early neural network used sigmoid — so why did it kill deep networks above 3 layers?" Scene 1 (0–4s): pose the question — show a deep network failing to learn. Scene 2 (4–9s): draw the sigmoid curve S-shape, formula σ(x) = 1/(1+e^-x), output range [0,1]. Scene 3 (9–15s): show the derivative curve — it peaks at 0.25 and flattens near 0 and 1. Scene 4 (15–20s): animate vanishing gradient — multiply 0.25 × 0.25 × 0.25 across layers, show it shrinking to near zero. Scene 5 (20–26s): show early layers receiving a gradient of essentially 0.001 — they stop learning. Scene 6 (26–32s): show sigmoid still used for binary classification outputs (0 or 1). Scene 7 (32–37s): key takeaway card — great for output layer, never use in hidden layers of deep nets. Scene 8 (37–43s): Applie AI Lab outro. Use the same SCENE_DATA env var JSON pattern as my previous videos.
 
 ---
 
@@ -311,3 +311,6 @@ Make it **visual, dynamic, and memorable.**
 Importantt to add at the end of the video:
 my channel name is Applie AI lab so mention at the end 
 "Thanks for watching! If you found this helpful, like this video and subscribe to Applie AI Lab for more AI concepts explained simply!"
+
+
+At the very end verify the code once to see if it is correct if any scene is wrong or not working fix it and return the  final code.

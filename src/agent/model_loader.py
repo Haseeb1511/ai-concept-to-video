@@ -66,6 +66,20 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
     response = llm.invoke(messages)
     return response.content
 
+def get_tool_calling_llm(tools=None):
+    """
+    Returns the global LLM instance bound with the provided tools.
+    If no tools are provided, it tries to fetch them from the MCP client.
+    """
+    if tools is None:
+        from src.mcp.client import get_mcp_tools
+        tools = get_mcp_tools()
+        
+    if not tools:
+        return llm
+        
+    return llm.bind_tools(tools)
+
 
 
 

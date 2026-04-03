@@ -2,7 +2,50 @@
 
 A production-style Python pipeline that automatically generates short educational videos from a topic text.
 
+True LangGraph Orchestration (High Priority)
+Instead of the current for loop in render.py, you should implement a proper State Graph.
 
+Why: This allows the agent to decide which tool to use (e.g., "I'll check the docs for this specific AttributeError, then I'll try to re-render").
+Implementation: Use langgraph to define nodes like generate, render_test, search_docs, and stitching.
+
+
+
+
+
+# mcp tool to add
+```text
+
+
+ covnert to reasonin in render.py   react agent 
+
+
+ 
+
+
+
+ 
+it store previous history somewhere so when i ask for new topic it should not use previous history.
+
+web search
+tavily
+youtube data api -->Take the final outputs/final_video.mp4 and the generated SEO text and auto-upload it to YouTube.
+
+Read analytics from your existing YouTube videos (e.g., retention rate) to "learn" what types of Manim animations keep viewers engaged, theoretically allowing the LLM to adjust its future animation styles.
+
+
+3. Unsplash or Wikimedia Commons MCP (For Dynamic Assets)
+Why adding it helps: Manim is great for vector math and text, but plain animations can sometimes lack visual flair compared to professional YouTube Shorts. Manim supports ImageMobject, but currently, it relies on static assets you provide.
+How it integrates: When the LLM generates a script (e.g., "Imagine a black hole..."), it can use an Image Search MCP to download a real image of a black hole into your assets/ folder, and write the Manim code to fade that image into the background.
+
+
+
+GitHub / ReadTheDocs MCP (For Advanced Manim Code Reliability)
+Why adding it helps: You have a ReAct agent that loops to fix Manim code by reading the Traceback error. However, Manim Community edition updates frequently, and LLMs often hallucinate older manimlib syntaxes or non-existent methods.
+How it integrates: If the LLM encounters a difficult Manim error, it could use an MCP tool that taps directly into the current Manim GitHub repository or Documentation source. It can search the docs for "how to correctly use TransformMatchingTex in version 0.18" to fix its own syntax intelligently, drastically reducing the number of retry loops.
+
+
+
+```
 
 
 

@@ -11,6 +11,13 @@ st.set_page_config(
     layout="centered",
 )
 
+if "final_video" not in st.session_state:
+    st.session_state.final_video = None
+if "seo_title" not in st.session_state:
+    st.session_state.seo_title = ""
+if "seo_desc" not in st.session_state:
+    st.session_state.seo_desc = ""
+
 # --- Custom Styling ---
 st.markdown("""
     <style>
@@ -172,59 +179,227 @@ st.markdown("""
     }
     .badge-blue  { background: rgba(88,166,255,0.15); color: #58a6ff; border: 1px solid rgba(88,166,255,0.3); }
     
-    /* Tactical Terminal / Military Logs */
-    .tactical-terminal {
-        background-color: #050505;
-        border: 2px solid #1a1a1a;
-        border-top: 20px solid #1a1a1a;
-        border-radius: 4px;
-        padding: 15px;
-        font-family: 'JetBrains Mono', 'Courier New', monospace;
-        font-size: 13px;
-        color: #00ff41; /* Classic Matrix/Terminal Green */
-        height: 300px;
-        overflow-y: auto;
-        box-shadow: inset 0 0 10px #000;
+    /* ── Activity Feed Log Panel ───────────────────────── */
+    .activity-feed {
+        background: linear-gradient(145deg, #0d1117, #111827);
+        border: 1px solid #21262d;
+        border-radius: 12px;
+        padding: 0;
+        overflow: hidden;
         margin-top: 20px;
-        position: relative;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
     }
 
-    .tactical-terminal::before {
-        content: "AGENTIC TACTICAL FEED";
-        position: absolute;
-        top: -18px;
-        left: 10px;
-        font-size: 10px;
-        font-weight: 800;
+    .feed-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: rgba(22, 27, 34, 0.8);
+        border-bottom: 1px solid #21262d;
+        backdrop-filter: blur(8px);
+    }
+
+    .feed-title {
+        font-size: 12px;
+        font-weight: 600;
         color: #8b949e;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        flex: 1;
     }
 
-    .log-line {
-        margin: 0;
-        padding: 2px 0;
+    .feed-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #2ea043;
+        box-shadow: 0 0 6px #2ea043;
+        animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+
+    .feed-body {
+        padding: 12px 16px;
+        max-height: 280px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #30363d transparent;
+    }
+
+    .feed-body::-webkit-scrollbar { width: 4px; }
+    .feed-body::-webkit-scrollbar-track { background: transparent; }
+    .feed-body::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+
+    .feed-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 7px 0;
+        border-bottom: 1px solid rgba(33,38,45,0.6);
+        animation: slide-in 0.25s ease;
+        font-size: 13px;
         line-height: 1.4;
-        text-shadow: 0 0 2px rgba(0, 255, 65, 0.5);
     }
 
-    /* Agentic log line colors */
-    .log-line.agent  { color: #00d4ff; text-shadow: 0 0 4px rgba(0, 212, 255, 0.6); }
-    .log-line.error  { color: #ff4444; text-shadow: 0 0 4px rgba(255, 68, 68, 0.6); }
-    .log-line.fallback { color: #ff9f43; text-shadow: 0 0 4px rgba(255, 159, 67, 0.6); }
-    .log-line.retry  { color: #ffd32a; text-shadow: 0 0 4px rgba(255, 211, 42, 0.6); }
-    .log-line.critical { color: #ff6b6b; text-shadow: 0 0 6px rgba(255, 107, 107, 0.8); font-weight: bold; }
-    .log-line.complete { color: #2ed573; text-shadow: 0 0 6px rgba(46, 213, 115, 0.8); font-weight: bold; }
-    
-    /* Scanline effect */
-    .tactical-terminal::after {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; bottom: 0; right: 0;
-        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-        background-size: 100% 3px, 3px 100%;
-        pointer-events: none;
+    .feed-item:last-child { border-bottom: none; }
+
+    @keyframes slide-in {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .feed-icon {
+        font-size: 15px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .feed-time {
+        font-size: 11px;
+        color: #484f58;
+        flex-shrink: 0;
+        font-family: 'JetBrains Mono', monospace;
+        margin-top: 2px;
+    }
+
+    .feed-text {
+        flex: 1;
+        color: #c9d1d9;
+    }
+
+    .feed-pill {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 20px;
+        flex-shrink: 0;
+        letter-spacing: 0.4px;
+        margin-top: 2px;
+    }
+
+    /* Pill variants */
+    .pill-info     { background: rgba(88,166,255,0.15);  color: #58a6ff;  border: 1px solid rgba(88,166,255,0.25); }
+    .pill-audio    { background: rgba(163,113,247,0.15); color: #a371f7;  border: 1px solid rgba(163,113,247,0.25); }
+    .pill-render   { background: rgba(56,189,248,0.15);  color: #38bdf8;  border: 1px solid rgba(56,189,248,0.25); }
+    .pill-agent    { background: rgba(251,191,36,0.15);  color: #fbbf24;  border: 1px solid rgba(251,191,36,0.25); }
+    .pill-warning  { background: rgba(249,115,22,0.15);  color: #f97316;  border: 1px solid rgba(249,115,22,0.25); }
+    .pill-success  { background: rgba(46,164,67,0.15);   color: #3fb950;  border: 1px solid rgba(46,164,67,0.25); }
+    .pill-error    { background: rgba(248,81,73,0.15);   color: #f85149;  border: 1px solid rgba(248,81,73,0.25); }
+    .pill-assembly { background: rgba(52,211,153,0.15);  color: #34d399;  border: 1px solid rgba(52,211,153,0.25); }
+
+    /* Sidebar Tool Showcase */
+    [data-testid="stSidebar"] {
+        background-color: #0d1117;
+        border-right: 1px solid #21262d;
+    }
+
+    .sidebar-header {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #e6edf3;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #30363d;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .tool-category {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 20px 0 10px 0;
+    }
+
+    .tool-card {
+        background: rgba(22, 27, 34, 0.5);
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
+        cursor: default;
+    }
+
+    .tool-card:hover {
+        border-color: #58a6ff;
+        background: rgba(88, 166, 255, 0.05);
+        transform: translateX(4px);
+    }
+
+    .tool-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #58a6ff;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .tool-desc {
+        font-size: 0.75rem;
+        color: #8b949e;
+        line-height: 1.4;
+    }
+
+    .category-icon {
+        font-size: 1.1rem;
     }
     </style>
     """, unsafe_allow_html=True)
+
+# --- Sidebar: Project Tools Showcase ---
+with st.sidebar:
+    st.markdown("""
+        <div class="sidebar-header">
+            <span class="category-icon">🛠️</span> Available Tools
+        </div>
+    """, unsafe_allow_html=True)
+
+    tools_data = {
+        "YouTube Ops": [
+            {"icon": "📺", "name": "list_my_videos", "desc": "Retrieve recent uploads from your channel."},
+            {"icon": "📊", "name": "get_video_stats", "desc": "Fetch views, likes, and engagement metrics."},
+            {"icon": "🔍", "name": "search_youtube", "desc": "Find reference material via YouTube Data API."}
+        ],
+        "Knowledge Base": [
+            {"icon": "📚", "name": "search_manim_docs", "desc": "Deep search Manim Community documentation."},
+            {"icon": "📄", "name": "read_doc_page", "desc": "Extract technical syntax from web docs."}
+        ],
+        "Automation": [
+            {"icon": "⚡", "name": "execute_manim", "desc": "Compile and preview Manim scenes in real-time."},
+            {"icon": "🧹", "name": "cleanup_temp", "desc": "Maintain workspace hygiene (temp files)."}
+        ],
+        "Media Assets": [
+            {"icon": "🖼️", "name": "search_image", "desc": "Find relevant visuals for video concept."},
+            {"icon": "📥", "name": "download_image", "desc": "Asset acquisition for the production pipeline."}
+        ]
+    }
+
+    for category, items in tools_data.items():
+        st.markdown(f'<div class="tool-category">{category}</div>', unsafe_allow_html=True)
+        for tool in items:
+            st.markdown(f"""
+                <div class="tool-card">
+                    <div class="tool-name">
+                        <span>{tool['icon']}</span>
+                        <span>{tool['name']}</span>
+                    </div>
+                    <div class="tool-desc">{tool['desc']}</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown('<p style="color:#484f58; font-size:11px; text-align:center;">MCP Agent · Version 1.0.4</p>', unsafe_allow_html=True)
 
 # --- Header ---
 st.markdown('<h1 class="hero-heading">🎬 AI Video Generator</h1>', unsafe_allow_html=True)
@@ -318,58 +493,122 @@ if custom_generate_btn:
                 "script": script_text.strip(),
                 "tts_provider": tts_custom,
             }
-            # Use stream=True for real-time tactical feedback. Timeout set to None for long Manim renders.
             with requests.post(backend_custom_url, json=payload, stream=True, timeout=None) as response:
                 if response.status_code == 200:
                     for line in response.iter_lines():
                         if line:
                             data = json.loads(line.decode("utf-8"))
                             
-                            # Log handling — color-code agentic categories
                             if "log" in data:
                                 log_history.append(data["log"])
-                                def _log_css_class(log_text):
-                                    lt = log_text.upper()
-                                    if ">> AGENT:" in lt:   return "log-line agent"
-                                    if ">> ERROR:" in lt:   return "log-line error"
-                                    if ">> FALLBACK:" in lt: return "log-line fallback"
-                                    if ">> RETRY:" in lt:   return "log-line retry"
-                                    if ">> CRITICAL:" in lt: return "log-line critical"
-                                    if ">> COMPLETE:" in lt: return "log-line complete"
-                                    return "log-line"
-                                display_logs = "".join([f'<p class="{_log_css_class(l)}">{l}</p>' for l in log_history[-20:]])
-                                log_container.markdown(f"""
-                                    <div class="tactical-terminal">
-                                        {display_logs}
-                                    </div>
-                                """, unsafe_allow_html=True)
 
-                            # Error handling
+                                def _classify(log_text):
+                                    lt = log_text.upper()
+                                    if any(k in lt for k in ["AGENT", "AI AGENT", "LANGGRAPH", "FIXING", "RESEARCHING"]):
+                                        return ("🤖", "Agent",    "pill-agent")
+                                    if any(k in lt for k in ["AUDIO", "SYNTHESIS", "TTS"]):
+                                        return ("🎙️", "Audio",    "pill-audio")
+                                    if any(k in lt for k in ["RENDER", "MANIM", "SCENE"]):
+                                        return ("🎬", "Render",   "pill-render")
+                                    if any(k in lt for k in ["STITCH", "ASSEMBLY", "MERGE"]):
+                                        return ("🔗", "Assembly",  "pill-assembly")
+                                    if any(k in lt for k in ["FALLBACK", "RETRY", "WARNING"]):
+                                        return ("⚠️", "Fallback",  "pill-warning")
+                                    if any(k in lt for k in ["DONE", "COMPLETE", "✅", "READY", "VIDEO SAVED"]):
+                                        return ("✅", "Done",     "pill-success")
+                                    if any(k in lt for k in ["ERROR", "FAILED", "ABORT", "CRITICAL", "❌"]):
+                                        return ("❌", "Error",    "pill-error")
+                                    return ("ℹ️", "Info",         "pill-info")
+
+                                def _extract_time(log_text):
+                                    import re
+                                    m = re.search(r"\[(\d{2}:\d{2}:\d{2})\]", log_text)
+                                    return m.group(1) if m else ""
+
+                                def _extract_message(log_text):
+                                    # Strip the icon + [time] + label + arrow prefix
+                                    import re
+                                    cleaned = re.sub(r"^[^\w\[]*", "", log_text)         # leading emojis
+                                    cleaned = re.sub(r"\[\d{2}:\d{2}:\d{2}\]\s*", "", cleaned)  # [HH:MM:SS]
+                                    cleaned = re.sub(r"^[A-Za-z ]+\s*→\s*", "", cleaned)        # label → 
+                                    return cleaned.strip() or log_text.strip()
+
+                                items_html = ""
+                                for l in log_history[-18:]:
+                                    icon, label, pill = _classify(l)
+                                    t = _extract_time(l)
+                                    msg = _extract_message(l)
+                                    items_html += f"""
+<div class="feed-item">
+    <span class="feed-icon">{icon}</span>
+    <span class="feed-text">{msg}</span>
+    <span class="feed-time">{t}</span>
+    <span class="feed-pill {pill}">{label}</span>
+</div>"""
+
+                                log_container.markdown(f"""
+<div class="activity-feed">
+    <div class="feed-header">
+        <span class="feed-dot"></span>
+        <span class="feed-title">Live Activity</span>
+        <span style="font-size:11px;color:#484f58">{len(log_history)} events</span>
+    </div>
+    <div class="feed-body">
+        {items_html}
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
                             if "error" in data:
-                                st.error(f"Tactical Failure in **{data.get('failed_node', 'Pipeline')}**: {data['error']}")
+                                st.error(f"❌ Generation failed in **{data.get('failed_node', 'Pipeline')}**: {data['error']}")
                                 break
 
-                            # Final result
                             if "final_video" in data:
                                 video_path = data["final_video"]
-                                st.success("✅ Custom Video Mission Complete!")
-                                if os.path.exists(video_path):
-                                    st.video(video_path)
-                                    with open(video_path, "rb") as file:
-                                        st.download_button(
-                                            label="⬇️ Download Custom Asset",
-                                            data=file,
-                                            file_name="custom_video.mp4",
-                                            mime="video/mp4"
-                                        )
+                                st.session_state.final_video = video_path
+                                st.success("🎉 Your video is ready!")
                                 break
                 elif response.status_code == 409:
-                    st.warning("⏳ Tactical Warning: A generation is already in progress.")
+                    st.warning("⏳ A video is already being generated. Please wait for it to finish.")
                 else:
-                    st.error(f"Backend Link Offline: {response.status_code}")
+                    st.error(f"⚠️ Backend returned an error: {response.status_code}")
 
         except Exception as e:
-            st.error(f"Critical Protocol Error: {e}")
+            st.error(f"🔌 Connection error: {e}")
+
+if st.session_state.final_video and os.path.exists(st.session_state.final_video):
+    # Display the final video robustly outside button condition
+    st.video(st.session_state.final_video)
+    with open(st.session_state.final_video, "rb") as file:
+        st.download_button(
+            label="⬇️ Download Video",
+            data=file,
+            file_name="custom_video.mp4",
+            mime="video/mp4"
+        )
+    
+    st.markdown("---")
+    st.markdown("### 🚀 Generate SEO Meta (Optional)")
+    st.markdown('<p style="color:#8b949e; font-size:14px; margin-top:-10px;">Use our expert AI persona (Claude Opus) to generate high-retention titles and descriptions.</p>', unsafe_allow_html=True)
+    
+    # We clear SEO results if they generate a new video
+    if st.button("✨ Generate Title & Description"):
+        with st.spinner("Claude Opus is crafting your metadata..."):
+            seo_url = f"{backend_base}/generate-seo"
+            try:
+                resp = requests.post(seo_url, json={"manim_code": manim_code.strip(), "script": script_text.strip()})
+                if resp.status_code == 200:
+                    data = resp.json()
+                    st.session_state.seo_title = data.get("title", "")
+                    st.session_state.seo_desc = data.get("description", "")
+                else:
+                    st.error(f"Failed to generate SEO. Error: {resp.text}")
+            except Exception as e:
+                st.error(f"Network error calling SEO generator: {e}")
+
+    if st.session_state.seo_title or st.session_state.seo_desc:
+        st.text_input("🏷️ Generated YouTube Title", value=st.session_state.seo_title)
+        st.text_area("📝 Generated YouTube Description", value=st.session_state.seo_desc, height=220)
 
 # --- Footer ---
 st.markdown("---")

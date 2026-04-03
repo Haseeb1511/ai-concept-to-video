@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from src.agent.progress import get_military_log
+from src.agent.progress import get_pipeline_log as _fmt
 from src.agent.model_loader import (
     AUDIO_DIR, VIDEO_RESOLUTION, VIDEO_OUTPUT_NAME, MANIM_QUALITY, OUTPUTS_DIR,
 )
@@ -20,11 +20,15 @@ def run_custom_pipeline(
     Modularized video generation pipeline.
     Yields log strings, finally yields a JSON with 'final_video' or 'error'.
     """
-    yield json.dumps({"log": get_military_log("INIT", "STARTING MODULAR PIPELINE...")})
+    print("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print("🚀  Pipeline started")
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    yield json.dumps({"log": _fmt("INIT", "STARTING MODULAR PIPELINE...")})
 
     # 1. Split script
     scenes_raw = _split_script_into_scenes(script)
-    yield json.dumps({"log": get_military_log("DETECTION", f"MISSION SEGMENTED INTO {len(scenes_raw)} SCENES")})
+    print(f"🔍  Detected {len(scenes_raw)} scenes in the script")
+    yield json.dumps({"log": _fmt("DETECTION", f"MISSION SEGMENTED INTO {len(scenes_raw)} SCENES")})
 
     # 2. TTS synthesis
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
@@ -32,13 +36,16 @@ def run_custom_pipeline(
     scenes_for_tts = [_strip_timestamps(s) for s in scenes_raw]
 
     for idx, tts_text in enumerate(scenes_for_tts, start=1):
-        yield json.dumps({"log": get_military_log("SYNTHESIS", f"TTS SIGNAL: SCENE {idx} ({len(tts_text)} CHARS)")})
+        print(f"🎙️   Generating audio for scene {idx}/{len(scenes_for_tts)} ({len(tts_text)} chars)")
+        yield json.dumps({"log": _fmt("SYNTHESIS", f"TTS SIGNAL: SCENE {idx} ({len(tts_text)} CHARS)")})
         out_path = AUDIO_DIR / f"custom_scene_{idx}.wav"
         try:
             _synthesise_tts(tts_text, out_path, tts_provider)
+            print(f"   ✅ Audio done → {out_path.name}")
             audio_files.append(str(out_path))
         except Exception as exc:
-            yield json.dumps({"log": get_military_log("ABORT", f"TTS FAILURE: {exc}"), "error": str(exc), "failed_node": "custom_tts"})
+            print(f"   ❌ Audio generation failed for scene {idx}: {exc}")
+            yield json.dumps({"log": _fmt("ABORT", f"TTS FAILURE: {exc}"), "error": str(exc), "failed_node": "custom_tts"})
             return
 
     # 3. Manim rendering
@@ -47,7 +54,8 @@ def run_custom_pipeline(
     
     for idx, (raw_text, audio_path) in enumerate(zip(scenes_raw, audio_files), start=1):
         duration = _get_audio_duration(audio_path)
-        yield json.dumps({"log": get_military_log("RENDER", f"MANIM SECTOR: {idx} [DURATION: {duration:.2f}S]")})
+        print(f"\n🎬  Rendering scene {idx}/{len(scenes_raw)} (duration: {duration:.2f}s)")
+        yield json.dumps({"log": _fmt("RENDER", f"MANIM SECTOR: {idx} [DURATION: {duration:.2f}S]")})
         
         scene_data = {
             "scene_id": idx,
@@ -55,30 +63,34 @@ def run_custom_pipeline(
             "duration": duration,
         }
 
-        # Inner callback to capture agentic logs
-        def _log_forwarder(category, msg):
-            # This is a bit of a hack to get the logs out of the nested generator,
-            # but since we're in a yield loop, we'll actually need to handle this differently.
-            # For now, we'll just print to stdout and the renderer will handle internal logging.
-            pass
+        def _make_log_callback(scene_idx):
+            def _cb(category, msg):
+                icon = {"AGENT": "🤖", "COMPLETE": "✅", "FALLBACK": "⚠️", "FATAL": "❌"}.get(category.upper(), "  ")
+                print(f"   {icon} [{category}] {msg}")
+            return _cb
 
         rendered = _render_manim_scene(
             idx, manim_code, scene_data, width, height, MANIM_QUALITY,
-            log_callback=lambda cat, msg: print(f"[{cat}] {msg}")
+            log_callback=_make_log_callback(idx)
         )
 
         if not rendered:
+            print(f"   ❌ Scene {idx} could not be rendered after all attempts")
             yield json.dumps({
-                "log": get_military_log("CRITICAL", f"RENDER FAILED: SECTOR {idx}"),
+                "log": _fmt("CRITICAL", f"RENDER FAILED: SECTOR {idx}"),
                 "error": f"Manim rendering failed on scene {idx}",
                 "failed_node": "custom_manim"
             })
             return
 
+        print(f"   ✅ Scene {idx} rendered successfully")
         rendered_scenes.append(rendered)
 
+
+
     # 4. Stitching
-    yield json.dumps({"log": get_military_log("ASSEMBLY", "STITCHING MISSION CLIPS...")})
+    print(f"\n🔗  Stitching {len(rendered_scenes)} scenes together...")
+    yield json.dumps({"log": _fmt("ASSEMBLY", "STITCHING MISSION CLIPS...")})
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     output_path = str(OUTPUTS_DIR / f"custom_{VIDEO_OUTPUT_NAME}")
 
@@ -86,7 +98,8 @@ def run_custom_pipeline(
     
     if not success:
         # MoviePy fallback (legacy support)
-        yield json.dumps({"log": get_military_log("RETRY", "FFMPEG FAILED. ATTEMPTING MOVIEPY FALLBACK...")})
+        print("   ⚠️  FFmpeg failed, trying MoviePy fallback...")
+        yield json.dumps({"log": _fmt("RETRY", "FFMPEG FAILED. ATTEMPTING MOVIEPY FALLBACK...")})
         try:
             from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips
             clips = []
@@ -96,12 +109,17 @@ def run_custom_pipeline(
             final_clip = concatenate_videoclips(clips, method="compose")
             final_clip.write_videofile(output_path, fps=30, codec="libx264", audio_codec="aac", preset="ultrafast", logger=None)
             success = True
+            print("   ✅ MoviePy stitch succeeded")
         except Exception as exc:
-            yield json.dumps({"log": get_military_log("ABORT", f"STITCHING FAILED: {exc}")})
+            print(f"   ❌ MoviePy stitch also failed: {exc}")
+            yield json.dumps({"log": _fmt("ABORT", f"STITCHING FAILED: {exc}")})
 
     if not success:
         yield json.dumps({"error": "All stitching methods failed.", "failed_node": "custom_stitch"})
         return
 
-    yield json.dumps({"log": get_military_log("COMPLETE", f"FINAL VIDEO ARCHIVED: {output_path}")})
+    print(f"\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print(f"✅  Video ready → {output_path}")
+    print(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+    yield json.dumps({"log": _fmt("COMPLETE", f"FINAL VIDEO ARCHIVED: {output_path}")})
     yield json.dumps({"final_video": output_path})

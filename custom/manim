@@ -1,281 +1,413 @@
-data = json.loads(os.environ["SCENE_DATA"])
-text = data["text"]
-duration = data["duration"]
-scene_id = data["scene_id"]
-
 class RenderScene(Scene):
     def construct(self):
+        data = json.loads(os.environ["SCENE_DATA"])
+        text = data["text"]
+        duration = data["duration"]
+        scene_id = data["scene_id"]
 
         if scene_id == 1:
-            title = Text("How does AI read a sentence\nall at once?", font_size=48, color=WHITE)
-            title.set_width(6)
-            title.move_to(ORIGIN)
-
-            dots = VGroup(*[Dot(radius=0.12, color=YELLOW) for _ in range(5)])
-            dots.arrange(RIGHT, buff=0.5)
-            dots.shift(DOWN * 2.2)
-
-            arrows = VGroup()
-            for i in range(len(dots) - 1):
-                arr = Arrow(dots[i].get_right(), dots[i+1].get_left(), buff=0.05, color=BLUE_B, stroke_width=3)
-                arrows.add(arr)
-
-            self.play(FadeIn(title, shift=UP * 0.3), run_time=duration * 0.4)
-            self.play(Create(dots), run_time=duration * 0.3)
-            self.play(Create(arrows), run_time=duration * 0.3)
-
+            self.scene_1(duration)
         elif scene_id == 2:
-            label = Text("Multi-Head Attention", font_size=52, color=YELLOW)
-            label.set_width(6.2)
-            label.shift(UP * 2.5)
-
-            sub = Text("Not once — multiple times, in parallel.", font_size=34, color=WHITE)
-            sub.set_width(5.8)
-            sub.next_to(label, DOWN, buff=0.5)
-
-            heads = VGroup()
-            colors = [RED, GREEN, BLUE, ORANGE, PURPLE, TEAL, PINK, GOLD]
-            for c in colors:
-                rect = RoundedRectangle(corner_radius=0.1, width=0.55, height=0.9, color=c, fill_opacity=0.7)
-                heads.add(rect)
-            heads.arrange(RIGHT, buff=0.18)
-            heads.set_width(5.8)
-            heads.shift(DOWN * 0.8)
-
-            brace = Brace(heads, DOWN, color=WHITE)
-            brace_label = brace.get_text("8 Heads", font_size=32)
-
-            self.play(FadeIn(label, shift=DOWN * 0.2), run_time=duration * 0.2)
-            self.play(FadeIn(sub), run_time=duration * 0.2)
-            self.play(LaggedStart(*[FadeIn(h, scale=0.5) for h in heads], lag_ratio=0.08), run_time=duration * 0.35)
-            self.play(GrowFromCenter(brace), FadeIn(brace_label), run_time=duration * 0.25)
-
+            self.scene_2(duration)
         elif scene_id == 3:
-            words = ["The", "cat", "sat", "on", "mat"]
-            colors = [WHITE, YELLOW, TEAL, WHITE, ORANGE]
-            token_group = VGroup()
-            for w, c in zip(words, colors):
-                box = RoundedRectangle(corner_radius=0.15, width=1.0, height=0.55, color=c, fill_opacity=0.15, stroke_color=c)
-                lbl = Text(w, font_size=30, color=c)
-                lbl.move_to(box.get_center())
-                token_group.add(VGroup(box, lbl))
-            token_group.arrange(RIGHT, buff=0.22)
-            token_group.set_width(6.0)
-            token_group.shift(UP * 0.5)
-
-            question = Text("Each word asks:\n'How much do I care about you?'", font_size=34, color=WHITE)
-            question.set_width(5.8)
-            question.shift(DOWN * 2.0)
-
-            cat_box = token_group[1]
-            attention_arrows = VGroup()
-            attn_colors = [BLUE_B, RED_B, GREEN_B, PURPLE_B]
-            targets = [0, 2, 3, 4]
-            for idx, tc in zip(targets, attn_colors):
-                start = cat_box.get_center() + UP * 0.35
-                end = token_group[idx].get_center() + UP * 0.35
-                curve = CurvedArrow(start, end, angle=-0.7, color=tc, stroke_width=3)
-                attention_arrows.add(curve)
-
-            self.play(LaggedStart(*[FadeIn(t, shift=UP * 0.2) for t in token_group], lag_ratio=0.1), run_time=duration * 0.35)
-            self.play(LaggedStart(*[Create(a) for a in attention_arrows], lag_ratio=0.12), run_time=duration * 0.35)
-            self.play(FadeIn(question, shift=UP * 0.2), run_time=duration * 0.3)
-
+            self.scene_3(duration)
         elif scene_id == 4:
-            header = Text("8 Attention Heads — In Parallel", font_size=42, color=YELLOW)
-            header.set_width(6.0)
-            header.shift(UP * 3.2)
-
-            colors_h = [RED, GREEN, BLUE, ORANGE, PURPLE, TEAL, PINK, GOLD]
-            head_cols = VGroup()
-            for i, c in enumerate(colors_h):
-                bg = RoundedRectangle(corner_radius=0.12, width=0.62, height=1.4, color=c, fill_opacity=0.6)
-                lbl = Text(f"H{i+1}", font_size=22, color=WHITE)
-                lbl.move_to(bg.get_center())
-                head_cols.add(VGroup(bg, lbl))
-            head_cols.arrange(RIGHT, buff=0.12)
-            head_cols.set_width(5.9)
-            head_cols.shift(UP * 0.8)
-
-            arrows_down = VGroup()
-            for col in head_cols:
-                arr = Arrow(col.get_bottom(), col.get_bottom() + DOWN * 0.7, buff=0.05, color=WHITE, stroke_width=2.5)
-                arrows_down.add(arr)
-
-            output_bar = RoundedRectangle(corner_radius=0.15, width=5.9, height=0.6, color=WHITE, fill_opacity=0.2)
-            output_bar.next_to(head_cols, DOWN, buff=0.75)
-            output_label = Text("Concat + Linear Projection", font_size=28, color=WHITE)
-            output_label.move_to(output_bar.get_center())
-
-            self.play(FadeIn(header), run_time=duration * 0.15)
-            self.play(LaggedStart(*[FadeIn(h, scale=0.4) for h in head_cols], lag_ratio=0.06), run_time=duration * 0.35)
-            self.play(LaggedStart(*[GrowArrow(a) for a in arrows_down], lag_ratio=0.05), run_time=duration * 0.25)
-            self.play(FadeIn(output_bar), FadeIn(output_label), run_time=duration * 0.25)
-
+            self.scene_4(duration)
         elif scene_id == 5:
-            title = Text("Each Head Learns Something Different", font_size=40, color=YELLOW)
-            title.set_width(5.9)
-            title.shift(UP * 3.0)
-
-            specialties = [
-                ("Grammar", RED),
-                ("Meaning", GREEN),
-                ("Position", BLUE),
-                ("Context", ORANGE),
-            ]
-            cards = VGroup()
-            for label_txt, c in specialties:
-                bg = RoundedRectangle(corner_radius=0.18, width=2.5, height=0.9, color=c, fill_opacity=0.25, stroke_color=c)
-                icon = Circle(radius=0.18, color=c, fill_opacity=0.9)
-                icon.next_to(bg.get_left(), RIGHT, buff=0.2)
-                txt = Text(label_txt, font_size=30, color=WHITE)
-                txt.next_to(icon, RIGHT, buff=0.2)
-                card = VGroup(bg, icon, txt)
-                cards.add(card)
-
-            cards[:2].arrange(RIGHT, buff=0.4)
-            cards[2:].arrange(RIGHT, buff=0.4)
-            cards[:2].shift(UP * 0.6)
-            cards[2:].shift(DOWN * 0.6)
-
-            sub = Text("...and 4 more patterns!", font_size=30, color=GREY_A)
-            sub.shift(DOWN * 2.2)
-
-            self.play(FadeIn(title), run_time=duration * 0.2)
-            self.play(LaggedStart(*[FadeIn(c, scale=0.6) for c in cards], lag_ratio=0.15), run_time=duration * 0.55)
-            self.play(FadeIn(sub), run_time=duration * 0.25)
-
+            self.scene_5(duration)
         elif scene_id == 6:
-            title = Text("Concat → Project → One Vector", font_size=42, color=YELLOW)
-            title.set_width(5.9)
-            title.shift(UP * 3.0)
-
-            input_bars = VGroup()
-            colors_b = [RED, GREEN, BLUE, ORANGE, PURPLE, TEAL, PINK, GOLD]
-            for c in colors_b:
-                bar = Rectangle(width=0.58, height=1.1, color=c, fill_opacity=0.75)
-                input_bars.add(bar)
-            input_bars.arrange(RIGHT, buff=0.1)
-            input_bars.set_width(5.6)
-            input_bars.shift(UP * 0.9)
-
-            arrow_concat = Arrow(input_bars.get_bottom(), input_bars.get_bottom() + DOWN * 0.9, color=WHITE, stroke_width=4)
-
-            output_vec = Rectangle(width=5.6, height=0.7, color=WHITE, fill_opacity=0.25)
-            output_vec.next_to(arrow_concat.get_end(), DOWN, buff=0.1)
-            out_label = Text("Unified Representation", font_size=30, color=WHITE)
-            out_label.move_to(output_vec.get_center())
-
-            self.play(FadeIn(title), run_time=duration * 0.15)
-            self.play(LaggedStart(*[FadeIn(b, shift=DOWN * 0.3) for b in input_bars], lag_ratio=0.06), run_time=duration * 0.4)
-            self.play(GrowArrow(arrow_concat), run_time=duration * 0.2)
-            self.play(FadeIn(output_vec), Write(out_label), run_time=duration * 0.25)
-
+            self.scene_6(duration)
         elif scene_id == 7:
-            bg_circle = Circle(radius=2.4, color=BLUE_D, fill_opacity=0.08, stroke_color=BLUE_D, stroke_width=2)
-            bg_circle.shift(UP * 0.3)
-
-            center_dot = Dot(radius=0.22, color=YELLOW)
-            center_dot.move_to(bg_circle.get_center())
-            center_label = Text("Understanding", font_size=28, color=YELLOW)
-            center_label.next_to(center_dot, DOWN, buff=0.15)
-
-            perspective_labels = ["Grammar", "Meaning", "Position", "Context", "Syntax", "Coref", "Scope", "Proximity"]
-            perspective_colors = [RED, GREEN, BLUE, ORANGE, PURPLE, TEAL, PINK, GOLD]
-            persp_group = VGroup()
-            for i, (pl, pc) in enumerate(zip(perspective_labels, perspective_colors)):
-                angle = i * TAU / 8
-                pos = bg_circle.get_center() + 2.0 * np.array([np.cos(angle), np.sin(angle), 0])
-                d = Dot(radius=0.13, color=pc)
-                d.move_to(pos)
-                t = Text(pl, font_size=20, color=pc)
-                direction = normalize(pos - bg_circle.get_center())
-                t.next_to(d, direction, buff=0.12)
-                line = Line(d.get_center(), center_dot.get_center(), color=pc, stroke_width=1.8, stroke_opacity=0.6)
-                persp_group.add(VGroup(line, d, t))
-
-            final_text = Text("Multiple perspectives.\nOne unified understanding.", font_size=34, color=WHITE)
-            final_text.set_width(5.5)
-            final_text.shift(DOWN * 3.1)
-
-            self.play(FadeIn(bg_circle), FadeIn(center_dot), FadeIn(center_label), run_time=duration * 0.2)
-            self.play(LaggedStart(*[FadeIn(p) for p in persp_group], lag_ratio=0.07), run_time=duration * 0.45)
-            self.play(FadeIn(final_text, shift=UP * 0.2), run_time=duration * 0.2)
-            self.wait(duration * 0.15)
-
+            self.scene_7(duration)
         elif scene_id == 8:
-            # ── Outro scene for Applie AI Lab ──
+            self.scene_8(duration)
 
-            # Glowing background ring
-            ring = Circle(radius=2.6, color=YELLOW, stroke_width=3, stroke_opacity=0.25, fill_opacity=0)
-            ring.shift(UP * 0.4)
+    # ─────────────────────────────────────────────
+    # SCENE 1 — Deep network failing (0–4s)
+    # ─────────────────────────────────────────────
+    def scene_1(self, duration):
+        question = Text(
+            "Why did Sigmoid\nKILL Deep Networks?",
+            font_size=40,
+            color=RED_C,
+            line_spacing=1.3,
+        )
+        question.to_edge(UP, buff=0.9)
 
-            # Channel name
-            channel_name = Text("Applie AI Lab", font_size=58, color=YELLOW, weight=BOLD)
-            channel_name.set_width(5.8)
-            channel_name.shift(UP * 2.6)
+        # Build 4-layer neural network
+        layer_sizes = [3, 4, 4, 2]
+        layer_x     = [-2.2, -0.75, 0.75, 2.2]
+        y_base       = -0.6
+        r            = 0.16
 
-            # Divider line
-            divider = Line(LEFT * 2.8, RIGHT * 2.8, color=YELLOW, stroke_width=2, stroke_opacity=0.5)
-            divider.next_to(channel_name, DOWN, buff=0.3)
+        node_groups = []
+        all_circles = VGroup()
+        for li, (lx, n) in enumerate(zip(layer_x, layer_sizes)):
+            col = []
+            for j in range(n):
+                y = y_base + (j - (n - 1) / 2) * 0.85
+                node = Circle(
+                    radius=r, color=BLUE_C,
+                    fill_color=BLUE_C, fill_opacity=0.5, stroke_width=2
+                )
+                node.move_to([lx, y, 0])
+                all_circles.add(node)
+                col.append(node)
+            node_groups.append(col)
 
-            # Thank you message
-            thanks = Text("Thank you for watching!", font_size=38, color=WHITE)
-            thanks.set_width(5.5)
-            thanks.next_to(divider, DOWN, buff=0.45)
+        # Sparse connections (first & last of next layer per node)
+        connections = VGroup()
+        for li in range(len(node_groups) - 1):
+            targets = [node_groups[li + 1][0], node_groups[li + 1][-1]]
+            for n1 in node_groups[li]:
+                for n2 in targets:
+                    line = Line(
+                        n1.get_center(), n2.get_center(),
+                        stroke_width=0.8, color=GRAY, stroke_opacity=0.45
+                    )
+                    connections.add(line)
 
-            # Like icon group
-            like_icon = VGroup(
-                RoundedRectangle(corner_radius=0.12, width=0.55, height=0.55, color=BLUE, fill_opacity=0.8),
-                Text("👍", font_size=24)
+        # Red crosses on first 3 layers → failed learning
+        fail_marks = VGroup()
+        for li in range(3):
+            for node in node_groups[li]:
+                cross = Cross(node, color=RED, stroke_width=3)
+                fail_marks.add(cross)
+
+        fail_label = Text("Learning STOPPED!", font_size=28, color=RED)
+        fail_label.next_to(all_circles, DOWN, buff=0.7)
+
+        self.play(FadeIn(question), run_time=duration * 0.25)
+        self.play(Create(connections), Create(all_circles), run_time=duration * 0.35)
+        self.play(FadeIn(fail_marks), run_time=duration * 0.2)
+        self.play(FadeIn(fail_label), run_time=duration * 0.2)
+
+    # ─────────────────────────────────────────────
+    # SCENE 2 — Sigmoid curve & formula (4–9s)
+    # ─────────────────────────────────────────────
+    def scene_2(self, duration):
+        title = Text("The Sigmoid Function", font_size=36, color=YELLOW)
+        title.to_edge(UP, buff=0.8)
+
+        formula = MathTex(
+            r"\sigma(x) = \frac{1}{1 + e^{-x}}",
+            font_size=38, color=YELLOW
+        )
+        formula.next_to(title, DOWN, buff=0.4)
+
+        axes = Axes(
+            x_range=[-5, 5, 1],
+            y_range=[0, 1.2, 0.25],
+            x_length=5.4,
+            y_length=3.8,
+            axis_config={"color": WHITE, "stroke_width": 2, "include_numbers": False},
+        )
+        axes.next_to(formula, DOWN, buff=0.35)
+
+        x_lbl = Text("x", font_size=22, color=WHITE).next_to(axes, RIGHT, buff=0.1)
+        y_lbl = (
+            Text("σ(x)", font_size=22, color=WHITE)
+            .next_to(axes, UP, buff=0.05)
+            .shift(LEFT * 1.8)
+        )
+
+        sigmoid_curve = axes.plot(
+            lambda x: 1 / (1 + np.exp(-x)), color=BLUE, stroke_width=4
+        )
+
+        # Dashed asymptotes
+        y0_dash = DashedLine(
+            axes.c2p(-5, 0), axes.c2p(5, 0),
+            color=GRAY, dash_length=0.12, stroke_width=1.5
+        )
+        y1_dash = DashedLine(
+            axes.c2p(-5, 1), axes.c2p(5, 1),
+            color=GRAY, dash_length=0.12, stroke_width=1.5
+        )
+        lbl_0 = Text("0", font_size=20, color=GRAY).next_to(axes.c2p(-5, 0), LEFT, buff=0.12)
+        lbl_1 = Text("1", font_size=20, color=GRAY).next_to(axes.c2p(-5, 1), LEFT, buff=0.12)
+
+        range_label = Text("Output always in  [0, 1]", font_size=26, color=GREEN)
+        range_label.next_to(axes, DOWN, buff=0.35)
+
+        self.play(FadeIn(title), run_time=duration * 0.12)
+        self.play(Write(formula), run_time=duration * 0.2)
+        self.play(Create(axes), FadeIn(x_lbl), FadeIn(y_lbl), run_time=duration * 0.2)
+        self.play(
+            Create(sigmoid_curve),
+            Create(y0_dash), Create(y1_dash),
+            FadeIn(lbl_0), FadeIn(lbl_1),
+            run_time=duration * 0.3,
+        )
+        self.play(FadeIn(range_label), run_time=duration * 0.18)
+
+    # ─────────────────────────────────────────────
+    # SCENE 3 — Derivative curve (9–15s)
+    # ─────────────────────────────────────────────
+    def scene_3(self, duration):
+        title = Text("Sigmoid Derivative (Gradient)", font_size=32, color=ORANGE)
+        title.to_edge(UP, buff=0.8)
+
+        formula = MathTex(
+            r"\sigma'(x) = \sigma(x)\,(1 - \sigma(x))",
+            font_size=30, color=ORANGE
+        )
+        formula.next_to(title, DOWN, buff=0.35)
+
+        axes = Axes(
+            x_range=[-5, 5, 1],
+            y_range=[0, 0.32, 0.1],
+            x_length=5.4,
+            y_length=3.6,
+            axis_config={"color": WHITE, "stroke_width": 2, "include_numbers": False},
+        )
+        axes.next_to(formula, DOWN, buff=0.35)
+
+        def sig(x):
+            return 1 / (1 + np.exp(-x))
+
+        deriv_curve = axes.plot(
+            lambda x: sig(x) * (1 - sig(x)), color=ORANGE, stroke_width=4
+        )
+
+        peak_dot = Dot(axes.c2p(0, 0.25), color=RED, radius=0.12)
+        peak_lbl = Text("MAX = 0.25", font_size=22, color=RED)
+        peak_lbl.next_to(peak_dot, UR, buff=0.1)
+
+        flat_warn = Text("Near-ZERO gradient at extremes!", font_size=24, color=RED_C)
+        flat_warn.next_to(axes, DOWN, buff=0.35)
+
+        self.play(FadeIn(title), run_time=duration * 0.12)
+        self.play(Write(formula), run_time=duration * 0.15)
+        self.play(Create(axes), run_time=duration * 0.18)
+        self.play(Create(deriv_curve), run_time=duration * 0.28)
+        self.play(FadeIn(peak_dot), FadeIn(peak_lbl), run_time=duration * 0.12)
+        self.play(FadeIn(flat_warn), run_time=duration * 0.15)
+
+    # ─────────────────────────────────────────────
+    # SCENE 4 — Vanishing gradient chain (15–20s)
+    # ─────────────────────────────────────────────
+    def scene_4(self, duration):
+        title = Text("Vanishing Gradient", font_size=40, color=RED)
+        title.to_edge(UP, buff=0.8)
+
+        subtitle = Text("Gradients multiply across layers:", font_size=24, color=WHITE)
+        subtitle.next_to(title, DOWN, buff=0.4)
+
+        steps = [
+            ("Output:",  "gradient = 0.25",               YELLOW),
+            ("Layer 3:", "0.25  ×  0.25  = 0.0625",       YELLOW),
+            ("Layer 2:", "0.0625  ×  0.25  = 0.016",      ORANGE),
+            ("Layer 1:", "0.016  ×  0.25  ≈  0.004",      RED),
+        ]
+
+        rows = VGroup()
+        for layer_name, calc, col in steps:
+            row = Text(f"{layer_name}   {calc}", font_size=22, color=col)
+            rows.add(row)
+        rows.arrange(DOWN, aligned_edge=LEFT, buff=0.3)
+        rows.next_to(subtitle, DOWN, buff=0.45)
+
+        bar_label = Text("Gradient magnitude:", font_size=22, color=WHITE)
+        bar_label.next_to(rows, DOWN, buff=0.45)
+
+        bar_bg = Rectangle(
+            width=4.5, height=0.38, color=GRAY, fill_opacity=0.25, stroke_width=1
+        )
+        bar_bg.next_to(bar_label, DOWN, buff=0.22)
+
+        bar_green = Rectangle(
+            width=4.5, height=0.38, color=GREEN, fill_opacity=0.88, stroke_width=0
+        )
+        bar_green.move_to(bar_bg.get_center())
+
+        # bar_red: thin sliver aligned to left edge of bar_bg
+        bar_red = Rectangle(
+            width=0.18, height=0.38, color=RED, fill_opacity=0.88, stroke_width=0
+        )
+        bar_red.align_to(bar_bg, LEFT)
+        bar_red.set_y(bar_bg.get_y())
+
+        self.play(FadeIn(title), run_time=duration * 0.1)
+        self.play(FadeIn(subtitle), run_time=duration * 0.1)
+        for row in rows:
+            self.play(FadeIn(row), run_time=duration * 0.1)
+        self.play(
+            FadeIn(bar_label), Create(bar_bg), FadeIn(bar_green),
+            run_time=duration * 0.1,
+        )
+        self.play(Transform(bar_green, bar_red), run_time=duration * 0.3)
+
+    # ─────────────────────────────────────────────
+    # SCENE 5 — Early layers frozen (20–26s)
+    # ─────────────────────────────────────────────
+    def scene_5(self, duration):
+        title = Text("Early Layers Stop Learning", font_size=32, color=RED)
+        title.to_edge(UP, buff=0.8)
+
+        layer_data = [
+            ("Output Layer",    "Gradient = 1.000", GREEN),
+            ("Layer 3",         "Gradient = 0.250", YELLOW),
+            ("Layer 2",         "Gradient = 0.016", ORANGE),
+            ("Layer 1 (Input)", "Gradient = 0.004", RED),
+        ]
+
+        boxes = VGroup()
+        for name, grad_str, col in layer_data:
+            box = Rectangle(
+                width=5.2, height=0.82,
+                color=col, fill_opacity=0.15, stroke_width=2
             )
-            like_icon[1].move_to(like_icon[0].get_center())
+            name_txt = Text(name, font_size=20, color=WHITE)
+            grad_txt = Text(grad_str, font_size=20, color=col)
+            name_txt.move_to(box.get_left() + RIGHT * 1.35)
+            grad_txt.move_to(box.get_right() + LEFT * 1.35)
+            boxes.add(VGroup(box, name_txt, grad_txt))
 
-            like_text = Text("Like", font_size=30, color=BLUE_B)
-            like_group = VGroup(like_icon, like_text)
-            like_group.arrange(RIGHT, buff=0.18)
+        boxes.arrange(DOWN, buff=0.3)
+        boxes.next_to(title, DOWN, buff=0.5)
 
-            # Subscribe icon group
-            sub_icon = VGroup(
-                RoundedRectangle(corner_radius=0.12, width=0.55, height=0.55, color=RED, fill_opacity=0.8),
-                Text("🔔", font_size=24)
-            )
-            sub_icon[1].move_to(sub_icon[0].get_center())
+        frozen = Text("Layer 1: NO learning signal!", font_size=24, color=RED_C)
+        frozen.next_to(boxes, DOWN, buff=0.4)
 
-            sub_text = Text("Subscribe", font_size=30, color=RED_B)
-            sub_group = VGroup(sub_icon, sub_text)
-            sub_group.arrange(RIGHT, buff=0.18)
+        indicator = SurroundingRectangle(boxes[-1], color=RED, buff=0.06, stroke_width=3)
 
-            # Arrange like + subscribe side by side
-            action_group = VGroup(like_group, sub_group)
-            action_group.arrange(RIGHT, buff=0.7)
-            action_group.set_width(5.4)
-            action_group.next_to(thanks, DOWN, buff=0.55)
+        self.play(FadeIn(title), run_time=duration * 0.15)
+        for box in boxes:
+            self.play(FadeIn(box), run_time=duration * 0.1)
+        self.play(Create(indicator), FadeIn(frozen), run_time=duration * 0.2)
+        self.wait(duration * 0.25)
 
-            # Bottom tagline
-            tagline = Text("AI concepts. Simply explained.", font_size=28, color=GREY_A)
-            tagline.set_width(5.2)
-            tagline.next_to(action_group, DOWN, buff=0.55)
+    # ─────────────────────────────────────────────
+    # SCENE 6 — Binary classifier output (26–32s)
+    # ─────────────────────────────────────────────
+    def scene_6(self, duration):
+        title = Text("Where Sigmoid DOES Work", font_size=34, color=GREEN)
+        title.to_edge(UP, buff=0.8)
 
-            # Animate
-            self.play(FadeIn(ring, scale=0.8), run_time=duration * 0.1)
-            self.play(
-                FadeIn(channel_name, shift=DOWN * 0.3),
-                run_time=duration * 0.2
-            )
-            self.play(Create(divider), run_time=duration * 0.1)
-            self.play(FadeIn(thanks, shift=UP * 0.2), run_time=duration * 0.15)
-            self.play(
-                LaggedStart(
-                    FadeIn(like_group, scale=0.7),
-                    FadeIn(sub_group, scale=0.7),
-                    lag_ratio=0.3
-                ),
-                run_time=duration * 0.25
-            )
-            self.play(
-                Indicate(like_group, color=BLUE, scale_factor=1.12),
-                Indicate(sub_group, color=RED, scale_factor=1.12),
-                run_time=duration * 0.1
-            )
-            self.play(FadeIn(tagline), run_time=duration * 0.1)
+        use_case = Text(
+            "Binary Classification — Output Layer Only",
+            font_size=22, color=WHITE
+        )
+        use_case.next_to(title, DOWN, buff=0.45)
+
+        # Flow: raw score → σ → probability
+        in_box = Rectangle(
+            width=2.2, height=0.9, color=BLUE, fill_opacity=0.25, stroke_width=2
+        )
+        in_txt = Text("z = 2.1", font_size=24, color=WHITE)
+        in_txt.move_to(in_box)
+        in_grp = VGroup(in_box, in_txt)
+
+        arrow = Arrow(ORIGIN, RIGHT * 1.2, color=WHITE, buff=0, stroke_width=3)
+        sigma_lbl = MathTex(r"\sigma(x)", font_size=32, color=YELLOW)
+
+        out_box = Rectangle(
+            width=2.2, height=0.9, color=GREEN, fill_opacity=0.25, stroke_width=2
+        )
+        out_txt = Text("P = 0.89", font_size=24, color=GREEN)
+        out_txt.move_to(out_box)
+        out_grp = VGroup(out_box, out_txt)
+
+        flow = VGroup(in_grp, arrow, out_grp)
+        flow.arrange(RIGHT, buff=0.3)
+        flow.next_to(use_case, DOWN, buff=0.5)
+        sigma_lbl.next_to(arrow, UP, buff=0.15)
+
+        decision_box = Rectangle(
+            width=5.2, height=0.82, color=GREEN, fill_opacity=0.12, stroke_width=2
+        )
+        decision_txt = Text(
+            "P > 0.5  →  Class A     |     P < 0.5  →  Class B",
+            font_size=18, color=GREEN
+        )
+        decision_txt.move_to(decision_box)
+        decision_grp = VGroup(decision_box, decision_txt)
+        decision_grp.next_to(flow, DOWN, buff=0.45)
+
+        prob_note = Text("Output = probability  (always 0 to 1)", font_size=24, color=YELLOW)
+        prob_note.next_to(decision_grp, DOWN, buff=0.35)
+
+        self.play(FadeIn(title), run_time=duration * 0.12)
+        self.play(FadeIn(use_case), run_time=duration * 0.1)
+        self.play(FadeIn(in_grp), run_time=duration * 0.12)
+        self.play(GrowArrow(arrow), FadeIn(sigma_lbl), run_time=duration * 0.18)
+        self.play(FadeIn(out_grp), run_time=duration * 0.12)
+        self.play(FadeIn(decision_grp), run_time=duration * 0.18)
+        self.play(FadeIn(prob_note), run_time=duration * 0.18)
+
+    # ─────────────────────────────────────────────
+    # SCENE 7 — Key takeaway card (32–37s)
+    # ─────────────────────────────────────────────
+    def scene_7(self, duration):
+        title = Text("Key Takeaway", font_size=42, color=YELLOW)
+        title.to_edge(UP, buff=0.8)
+
+        # Green card — good use
+        good_box = Rectangle(
+            width=5.5, height=1.5, color=GREEN, fill_opacity=0.18, stroke_width=2
+        )
+        good_title = Text("USE Sigmoid:", font_size=26, color=GREEN)
+        good_desc  = Text(
+            "Output layer  —  binary classification",
+            font_size=22, color=WHITE
+        )
+        good_title.move_to(good_box.get_top() + DOWN * 0.38)
+        good_desc.move_to(good_box.get_center() + DOWN * 0.28)
+        good_grp = VGroup(good_box, good_title, good_desc)
+
+        # Red card — bad use
+        bad_box = Rectangle(
+            width=5.5, height=1.5, color=RED, fill_opacity=0.18, stroke_width=2
+        )
+        bad_title = Text("AVOID Sigmoid:", font_size=26, color=RED)
+        bad_desc  = Text(
+            "Hidden layers in deep networks",
+            font_size=22, color=WHITE
+        )
+        bad_title.move_to(bad_box.get_top() + DOWN * 0.38)
+        bad_desc.move_to(bad_box.get_center() + DOWN * 0.28)
+        bad_grp = VGroup(bad_box, bad_title, bad_desc)
+
+        cards = VGroup(good_grp, bad_grp)
+        cards.arrange(DOWN, buff=0.45)
+        cards.next_to(title, DOWN, buff=0.5)
+
+        relu_note = Text("Use ReLU for deep hidden layers!", font_size=26, color=BLUE_C)
+        relu_note.next_to(cards, DOWN, buff=0.45)
+
+        self.play(FadeIn(title), run_time=duration * 0.18)
+        self.play(FadeIn(good_grp), run_time=duration * 0.25)
+        self.play(FadeIn(bad_grp), run_time=duration * 0.25)
+        self.play(FadeIn(relu_note), run_time=duration * 0.22)
+        self.wait(duration * 0.1)
+
+    # ─────────────────────────────────────────────
+    # SCENE 8 — Outro (37–43s)
+    # ─────────────────────────────────────────────
+    def scene_8(self, duration):
+        channel_name = Text("Applie AI Lab", font_size=52, color=YELLOW)
+        channel_name.to_edge(UP, buff=1.6)
+
+        divider = Line(LEFT * 2.6, RIGHT * 2.6, color=YELLOW, stroke_width=2)
+        divider.next_to(channel_name, DOWN, buff=0.45)
+
+        thanks = Text("Thanks for watching!", font_size=32, color=WHITE)
+        thanks.next_to(divider, DOWN, buff=0.55)
+
+        cta = Text(
+            "Like & Subscribe for more\nAI concepts explained simply!",
+            font_size=26,
+            color=WHITE,
+            line_spacing=1.5,
+        )
+        cta.next_to(thanks, DOWN, buff=0.45)
+
+        sub_box = SurroundingRectangle(cta, color=YELLOW, buff=0.3, stroke_width=3)
+
+        self.play(FadeIn(channel_name), run_time=duration * 0.22)
+        self.play(Create(divider), run_time=duration * 0.13)
+        self.play(FadeIn(thanks), run_time=duration * 0.18)
+        self.play(FadeIn(cta), run_time=duration * 0.22)
+        self.play(Create(sub_box), run_time=duration * 0.18)
+        self.wait(duration * 0.07)

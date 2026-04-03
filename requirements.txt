@@ -17,6 +17,7 @@ requests>=2.31.0
 langgraph>=0.0.21
 langchain>=0.1.0
 langchain-openai>=0.1.0
+langchain-mcp-adapters>=0.1.0
 openai>=1.14.0
 elevenlabs>=0.3.0
 
@@ -28,3 +29,23 @@ moviepy>=1.0.3,<2.0.0
 # Visualization
 manim>=0.18.0
 streamlit>=1.31.0
+
+
+
+#manim mcp
+mcp
+requests
+beautifulsoup4
+duckduckgo-search
+
+
+# image asset mcp server
+requests
+duckduckgo-search
+
+
+
+# google cloud
+google-auth-oauthlib 
+google-auth-httplib2 
+google-api-python-client

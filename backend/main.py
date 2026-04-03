@@ -10,14 +10,25 @@ from contextlib import asynccontextmanager
 import json
 
 from src.pipeline import run_custom_pipeline
+from src.agent.seo_generator import generate_seo_metadata
+from src.mcp.client import init_mcp_client, close_mcp_client
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Global lock to prevent parallel generations
     app.state.gen_lock = asyncio.Lock()
     
+    # Initialize MCP tools
+    print("[setup] Initializing MCP tools...")
+    await init_mcp_client()
+    
     print("[setup] Backend ready for Custom Video generation")
     yield
+    
+    # Global Cleanup
+    print("[cleanup] Closing MCP tools...")
+    await close_mcp_client()
+
 
 app = FastAPI(
     title="AI Video Generator API", 
@@ -62,6 +73,20 @@ async def generate_custom_video_endpoint(request: CustomVideoRequest):
                 yield chunk + "\n"
 
     return StreamingResponse(stream_generator(), media_type="application/x-ndjson")
+
+class SEORequest(BaseModel):
+    manim_code: str
+    script: str
+
+@app.post("/generate-seo")
+async def generate_seo_endpoint(request: SEORequest):
+    print(f"[seo] Receiving request for SEO metadata Generation")
+    try:
+        # Run in a separate thread to prevent blocking the async event loop
+        metadata = await asyncio.to_thread(generate_seo_metadata, request.manim_code, request.script)
+        return metadata
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/health")

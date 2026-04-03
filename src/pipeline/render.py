@@ -5,10 +5,31 @@ import subprocess
 import json
 import textwrap
 from pathlib import Path
+from typing import TypedDict, Annotated, List, Optional, Union
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, AIMessage
+from langchain_core.prompts import ChatPromptTemplate
+from langgraph.graph import StateGraph, END
+
 from src.agent.model_loader import (
-    MANIM_SCENES_DIR, VIDEOS_DIR, VIDEO_FPS, call_llm,
+    MANIM_SCENES_DIR, VIDEOS_DIR, VIDEO_FPS, call_llm, get_tool_calling_llm
 )
 from src.pipeline.utils import _get_quality_flag
+from src.mcp.client import get_mcp_tools
+
+class AgentState(TypedDict):
+    manim_code: str
+    error_history: List[str]
+    attempt: int
+    max_attempts: int
+    scene_text: str
+    success: bool
+    final_video: Optional[str]
+    width: int
+    height: int
+    quality: str
+    scene_id: int
+    scene_data: dict
+    messages: List[BaseMessage]
 
 # ─── constants ──────────────────────────────────────────────────────────────
 MAX_FIX_RETRIES = 4   # increased from 3
@@ -156,57 +177,6 @@ RULES:
 """
 
 
-def _ask_llm_to_fix_manim(
-    broken_code: str,
-    error_text: str,
-    attempt: int,
-    scene_description: str = "",
-) -> str:
-    """Send broken code + categorised error to LLM for auto-fix."""
-    error_label, hint = _categorize_error(error_text)
-    tail = _extract_traceback_tail(error_text)
-
-    # On later attempts, switch to a "simplify" strategy
-    if attempt >= 3:
-        system = _SIMPLIFY_SYSTEM
-        user_prompt = f"""\
-SCENE DESCRIPTION (what the scene should show):
-{scene_description or "A Manim animation scene."}
-
-FAILED CODE:
-```python
-{broken_code}
-```
-
-LAST ERROR ({error_label}):
-```
-{tail}
-```
-
-Produce a simplified, guaranteed-to-render version that preserves the core message."""
-    else:
-        system = _BASE_FIX_SYSTEM
-        user_prompt = f"""\
-ERROR CATEGORY: {error_label}
-TARGETED HINT: {hint}
-
-FAILED CODE:
-```python
-{broken_code}
-```
-
-EXACT ERROR (last 30 lines):
-```
-{tail}
-```
-
-Return ONLY the fixed Python code (no imports, no config, no markdown fences).
-Fix attempt #{attempt} — be precise and targeted."""
-
-    fixed_code = call_llm(system, user_prompt)
-    return _strip_markdown_fences(fixed_code)
-
-
 def _strip_markdown_fences(code: str) -> str:
     code = code.strip()
     if code.startswith("```"):
@@ -279,6 +249,155 @@ class RenderScene(Scene):
         self.play(FadeOut(t), run_time=0.5)
 '''
 
+# ─── LangGraph Nodes ─────────────────────────────────────────────────────────
+
+def _render_node(state: AgentState):
+    """Attempt to render and update state."""
+    code = state["manim_code"]
+    attempt = state["attempt"] + 1
+    scene_id = state["scene_id"]
+
+    print(f"   🎬 [Scene {scene_id}] Render attempt {attempt}/{state['max_attempts']}...")
+    
+    result, error = _try_render_internal(
+        scene_id,
+        code,
+        state["scene_data"],
+        state["width"],
+        state["height"],
+        state["quality"],
+        attempt
+    )
+    
+    if result:
+        print(f"   ✅ [Scene {scene_id}] Rendered successfully on attempt {attempt}")
+    else:
+        short_err = (error or "").strip().splitlines()[-1] if error else "unknown error"
+        print(f"   ❌ [Scene {scene_id}] Attempt {attempt} failed: {short_err}")
+    
+    messages = list(state["messages"])
+    if error:
+        messages.append(HumanMessage(content=f"Render failed with error:\n{error}"))
+    
+    return {
+        "attempt": attempt,
+        "success": result is not None,
+        "final_video": result,
+        "error_history": state["error_history"] + ([error] if error else []),
+        "messages": messages
+    }
+
+def _researcher_node(state: AgentState):
+    """ReAct agent node to research and fix code."""
+    llm_with_tools = get_tool_calling_llm()
+    scene_id = state["scene_id"]
+    attempt  = state["attempt"]
+
+    if attempt >= 3:
+        print(f"   🤖 [Scene {scene_id}] Attempt {attempt}: Switching to simplified scene strategy...")
+        system_msg = SystemMessage(content=_SIMPLIFY_SYSTEM)
+    else:
+        print(f"   🤖 [Scene {scene_id}] AI agent analyzing error and fixing code (attempt {attempt})...")
+        system_msg = SystemMessage(content=_BASE_FIX_SYSTEM)
+        
+    messages = [system_msg] + state["messages"]
+    
+    if state["attempt"] >= 2:
+        messages.append(HumanMessage(content=f"Reminder: The scene should show: {state['scene_text']}"))
+
+    response = llm_with_tools.invoke(messages)
+    
+    new_code = state["manim_code"]
+    if not response.tool_calls:
+        new_code = _strip_markdown_fences(response.content)
+        print(f"   📝 [Scene {scene_id}] Got fixed code from AI ({len(new_code)} chars)")
+    else:
+        print(f"   🔧 [Scene {scene_id}] AI is using MCP tools to research the fix...")
+        
+    return {
+        "messages": state["messages"] + [response],
+        "manim_code": new_code
+    }
+
+def _should_continue(state: AgentState):
+    if state["success"]:
+        return END
+    if state["attempt"] >= state["max_attempts"]:
+        return END
+    
+    if state["messages"] and hasattr(state["messages"][-1], "tool_calls") and state["messages"][-1].tool_calls:
+        return "tools"
+        
+    return "researcher"
+
+# --- Internal Helper for Render Node ---
+def _try_render_internal(scene_id, code, scene_data, width, height, quality, attempt):
+    cleaned = _normalise_class_name(_clean_code(code))
+    script_code = MANIM_IMPORTS.format(width=width, height=height, fps=VIDEO_FPS)
+    script_code += "\n" + cleaned
+
+    script_path = MANIM_SCENES_DIR / f"custom_scene_{scene_id}.py"
+    script_path.write_text(script_code, encoding="utf-8")
+    print(f"      📄 Script written → {script_path.name} ({len(script_code)} chars)")
+
+    quality_flag = _get_quality_flag(quality)
+    output_name = f"custom_scene_{scene_id}_render.mp4"
+
+    cmd = [
+        "manim", "render", str(script_path), "RenderScene",
+        quality_flag, "-o", output_name,
+        "--media_dir", str(MANIM_SCENES_DIR / "media"),
+        "--renderer=cairo",
+        "--disable_caching",
+    ]
+    env = os.environ.copy()
+    env["SCENE_DATA"] = json.dumps(scene_data)
+
+    print(f"      ⚙️  Running manim render ({quality_flag})...")
+    try:
+        subprocess.run(
+            cmd, env=env, capture_output=True, text=True,
+            check=True, timeout=120,
+        )
+        video_files = list((MANIM_SCENES_DIR / "media" / "videos").rglob(output_name))
+        if not video_files:
+            print(f"      ⚠️  Manim finished but output file not found: {output_name}")
+            return None, f"Manim finished but '{output_name}' not found."
+
+        final_path = VIDEOS_DIR / f"custom_scene_{scene_id}.mp4"
+        if final_path.exists():
+            final_path.unlink()
+        video_files[0].replace(final_path)
+        print(f"      ✅ Video saved → {final_path.name}")
+        return str(final_path), ""
+
+    except subprocess.CalledProcessError as exc:
+        combined = (exc.stderr or "") + "\n" + (exc.stdout or "")
+        last_line = combined.strip().splitlines()[-1] if combined.strip() else "unknown error"
+        print(f"      ❌ Manim process error: {last_line}")
+        return None, combined
+    except Exception as exc:
+        print(f"      ❌ Unexpected error: {exc}")
+        return None, str(exc)
+
+def _clean_code(code: str) -> str:
+    _strip_prefixes = (
+        "from manim import", "import manim",
+        "config.pixel_width", "config.pixel_height",
+        "config.frame_width", "config.frame_height", "config.frame_rate",
+    )
+    return "\n".join(
+        line for line in code.splitlines()
+        if not any(line.strip().startswith(p) for p in _strip_prefixes)
+    )
+
+def _normalise_class_name(code: str) -> str:
+    return re.sub(
+        r"\bclass\s+\w+\s*\(\s*(?:Scene|MovingCameraScene|ZoomedScene)\s*\)\s*:",
+        "class RenderScene(Scene):",
+        code,
+        count=1,
+    )
 
 # ─── main renderer ───────────────────────────────────────────────────────────
 
@@ -291,7 +410,7 @@ def _render_manim_scene(
     quality: str,
     log_callback=None,
 ) -> str | None:
-    """Agentic Manim renderer with self-healing and multi-tier fallback."""
+    """Agentic Manim renderer with LangGraph self-healing and multi-tier fallback."""
     MANIM_SCENES_DIR.mkdir(parents=True, exist_ok=True)
     VIDEOS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -303,133 +422,71 @@ def _render_manim_scene(
             log_callback(category, msg)
         print(f"[pipeline.render] [{category}] {msg}")
 
-    def _clean_code(code: str) -> str:
-        _strip_prefixes = (
-            "from manim import", "import manim",
-            "config.pixel_width", "config.pixel_height",
-            "config.frame_width", "config.frame_height", "config.frame_rate",
-        )
-        return "\n".join(
-            line for line in code.splitlines()
-            if not any(line.strip().startswith(p) for p in _strip_prefixes)
-        )
+    # --- Build LangGraph ---
+    from langgraph.prebuilt import ToolNode
+    
+    workflow = StateGraph(AgentState)
+    workflow.add_node("render", _render_node)
+    workflow.add_node("researcher", _researcher_node)
+    workflow.add_node("tools", ToolNode(get_mcp_tools()))
 
-    def _normalise_class_name(code: str) -> str:
-        return re.sub(
-            r"\bclass\s+\w+\s*\(\s*(?:Scene|MovingCameraScene|ZoomedScene)\s*\)\s*:",
-            "class RenderScene(Scene):",
-            code,
-            count=1,
-        )
+    workflow.set_entry_point("render")
+    workflow.add_conditional_edges("render", _should_continue, {
+        "researcher": "researcher",
+        END: END
+    })
+    workflow.add_conditional_edges("researcher", _should_continue, {
+        "tools": "tools",
+        "researcher": "researcher", 
+        END: END
+    })
+    workflow.add_edge("tools", "researcher")
 
-    def _try_render(code: str, attempt: int) -> tuple[str | None, str]:
-        # Pre-flight: Python syntax check
-        syntax_err = _syntax_check(code)
-        if syntax_err:
-            _log("SYNTAX", f"Pre-flight failed: {syntax_err}")
-            return None, syntax_err
+    app = workflow.compile()
 
-        cleaned = _normalise_class_name(_clean_code(code))
-        script_code = MANIM_IMPORTS.format(width=width, height=height, fps=VIDEO_FPS)
-        script_code += "\n" + cleaned
+    _log("AGENT", f"Starting LangGraph render agent for Scene {scene_id} (max {MAX_FIX_RETRIES} attempts)")
+    print(f"\n   🤖 LangGraph agent initialized for Scene {scene_id}")
+    
+    initial_state = {
+        "manim_code": manim_code,
+        "error_history": [],
+        "attempt": 0,
+        "max_attempts": MAX_FIX_RETRIES,
+        "scene_text": scene_text,
+        "success": False,
+        "final_video": None,
+        "width": width,
+        "height": height,
+        "quality": quality,
+        "scene_id": scene_id,
+        "scene_data": scene_data,
+        "messages": []
+    }
 
-        script_path = MANIM_SCENES_DIR / f"custom_scene_{scene_id}.py"
-        script_path.write_text(script_code, encoding="utf-8")
+    final_state = app.invoke(initial_state)
 
-        quality_flag = _get_quality_flag(quality)
-        output_name = f"custom_scene_{scene_id}_render.mp4"
-
-        cmd = [
-            "manim", "render", str(script_path), "RenderScene",
-            quality_flag, "-o", output_name,
-            "--media_dir", str(MANIM_SCENES_DIR / "media"),
-            "--renderer=cairo",   # force Cairo — avoids OpenGL/display issues
-            "--disable_caching",  # avoids stale partial-render cache problems
-        ]
-        env = os.environ.copy()
-        env["SCENE_DATA"] = json.dumps(scene_data)
-
-        _log("RENDER", f"Attempt {attempt} for scene {scene_id}")
-        try:
-            result = subprocess.run(
-                cmd, env=env, capture_output=True, text=True,
-                check=True, timeout=120,   # prevent hung renders
-            )
-            video_files = list((MANIM_SCENES_DIR / "media" / "videos").rglob(output_name))
-            if not video_files:
-                return None, f"Manim finished but '{output_name}' not found in media/videos/."
-
-            final_path = VIDEOS_DIR / f"custom_scene_{scene_id}.mp4"
-            if final_path.exists():
-                final_path.unlink()
-            video_files[0].replace(final_path)
-            _log("RENDER", f"Scene {scene_id} rendered OK → {final_path}")
-            return str(final_path), ""
-
-        except subprocess.TimeoutExpired:
-            return None, "Render timed out after 120 s."
-        except subprocess.CalledProcessError as exc:
-            combined = (exc.stderr or "") + "\n" + (exc.stdout or "")
-            error_label, _ = _categorize_error(combined)
-            _log("ERROR", f"Scene {scene_id} attempt {attempt} failed [{error_label}]")
-            return None, combined
-        except Exception as exc:
-            return None, str(exc)
-
-    # ── main fix loop ────────────────────────────────────────────────────────
-    current_code = manim_code
-    error_history: list[str] = []
-
-    for attempt in range(1, MAX_FIX_RETRIES + 2):
-        result, error = _try_render(current_code, attempt)
-        if result:
-            return result
-
-        error_history.append(error)
-
-        if attempt > MAX_FIX_RETRIES:
-            break
-
-        _log("AGENT", f"🤖 Auto-fixing (attempt {attempt}/{MAX_FIX_RETRIES})…")
-        try:
-            fixed_code = _ask_llm_to_fix_manim(
-                broken_code=current_code,
-                error_text=error,
-                attempt=attempt,
-                scene_description=scene_text,
-            )
-            if not fixed_code:
-                _log("AGENT", "⚠️ LLM returned empty fix — skipping.")
-                continue
-            if fixed_code.strip() == current_code.strip():
-                _log("AGENT", "⚠️ LLM returned identical code — skipping duplicate attempt.")
-                continue
-            # Quick syntax check before spending a render attempt
-            pre = _syntax_check(fixed_code)
-            if pre:
-                _log("AGENT", f"⚠️ Fixed code has syntax error ({pre}) — asking LLM again.")
-                # One more targeted syntax fix
-                fixed_code = _ask_llm_to_fix_manim(fixed_code, pre, attempt=attempt, scene_description=scene_text)
-                if _syntax_check(fixed_code):
-                    _log("AGENT", "⚠️ Second syntax fix also failed — skipping.")
-                    continue
-            current_code = fixed_code
-        except Exception as fix_exc:
-            _log("AGENT", f"⚠️ Fix call raised: {fix_exc}")
+    if final_state["success"]:
+        _log("COMPLETE", f"Scene {scene_id} rendered OK → {final_state['final_video']}")
+        return final_state["final_video"]
 
     # ── fallback tier 1: styled card ────────────────────────────────────────
-    _log("FALLBACK", "Trying styled fallback scene (tier 1)…")
+    _log("FALLBACK", f"All {MAX_FIX_RETRIES} AI attempts failed. Trying styled fallback card...")
+    print(f"   ⚠️  [Scene {scene_id}] Falling back to styled text card (tier 1)")
     fallback1 = _generate_fallback_scene(scene_id, scene_text, scene_duration)
-    result, err1 = _try_render(fallback1, attempt=0)
+    result, err1 = _try_render_internal(scene_id, fallback1, scene_data, width, height, quality, 0)
     if result:
+        print(f"   ✅ [Scene {scene_id}] Fallback tier 1 succeeded")
         return result
 
     # ── fallback tier 2: absolute minimum ───────────────────────────────────
-    _log("FALLBACK", "Trying minimal fallback scene (tier 2)…")
+    _log("FALLBACK", "Trying minimal text fallback (tier 2)...")
+    print(f"   ⚠️  [Scene {scene_id}] Trying minimal text fallback (tier 2)")
     fallback2 = _generate_minimal_fallback_scene(scene_id, scene_text, scene_duration)
-    result, err2 = _try_render(fallback2, attempt=0)
+    result, err2 = _try_render_internal(scene_id, fallback2, scene_data, width, height, quality, 0)
     if result:
+        print(f"   ✅ [Scene {scene_id}] Fallback tier 2 succeeded")
         return result
 
-    _log("FATAL", f"Scene {scene_id} could not be rendered after all attempts. Errors:\n{err2}")
+    _log("FATAL", f"Scene {scene_id} failed after all attempts and fallbacks.")
+    print(f"   ❌ [Scene {scene_id}] All render attempts and fallbacks exhausted")
     return None

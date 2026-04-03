@@ -1,23 +1,23 @@
 [Scene 1 | 0–4s]
-"How does an AI read an entire sentence... all at once?"
+"Every early neural network used sigmoid — so why did it completely KILL deep networks above 3 layers? Watch this."
 
 [Scene 2 | 4–9s]
-"It uses something called Attention — but not just once. It does it multiple times, simultaneously."
+"Sigmoid squashes any number into the range 0 to 1. Formula: sigma-of-x equals 1 over 1 plus e-to-the-negative-x. Smooth. Bounded. Looks perfect."
 
 [Scene 3 | 9–15s]
-"Imagine a sentence: 'The cat sat on the mat.' Each word looks at every other word and asks — how much do I care about you?"
+"But look at its derivative — the gradient signal. It peaks at just 0.25... and collapses to nearly ZERO at the extremes."
 
 [Scene 4 | 15–20s]
-"That's one attention head. But Multi-Head Attention runs eight of these in parallel — each one focusing on different relationships."
+"During backpropagation, gradients multiply across layers. 0.25 times 0.25 times 0.25 — you get 0.016. One more layer? Just 0.004. It vanishes."
 
 [Scene 5 | 20–26s]
-"One head tracks grammar. Another tracks meaning. Another tracks position. They all learn different patterns."
+"By the time you reach the early layers, the gradient is essentially 0.004. Those layers receive NO useful signal — they stop learning completely."
 
 [Scene 6 | 26–32s]
-"Then all their outputs are concatenated and projected into one powerful representation."
+"But sigmoid IS still valuable — at the output layer of a binary classifier, it converts any raw score into a clean probability between 0 and 1."
 
 [Scene 7 | 32–37s]
-"That's why Transformers are so powerful. Multiple perspectives. One unified understanding."
+"So: use sigmoid ONLY at the output layer for binary classification. In hidden layers of deep networks — NEVER. Use ReLU instead."
 
 [Scene 8 | 37–43s]
 "Thanks for watching! If you found this helpful, like this video and subscribe to Applie AI Lab for more AI concepts explained simply!"

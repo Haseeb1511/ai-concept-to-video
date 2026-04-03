@@ -11,7 +11,7 @@ async def text_to_speech_bytes(text: str) -> bytes:
     try:
         response = await client.audio.speech.create(
             model="tts-1",
-            voice="onyx",
+            voice="alloy",
             input=text
         )
         return response.content
