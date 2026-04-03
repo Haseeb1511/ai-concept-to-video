@@ -26,6 +26,14 @@ st.markdown("""
     html, body, [class*="st-"] {
         font-family: 'Inter', sans-serif;
     }
+
+    /* Fix Streamlit Material Icons rendering as text ligatures */
+    .material-symbols-rounded, 
+    .material-icons, 
+    [data-testid="stIconMaterial"], 
+    [class*="Icon"] {
+        font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important;
+    }
     
     /* Base Backgrounds and Text */
     .stApp, .main {

@@ -1,23 +1,23 @@
-[Scene 1 | 0–4s]
-"Every early neural network used sigmoid — so why did it completely KILL deep networks above 3 layers? Watch this."
+[Scene 1 | 0–3s]
+"Wait… this is ALL AI does? It's insanely simple."
 
-[Scene 2 | 4–9s]
-"Sigmoid squashes any number into the range 0 to 1. Formula: sigma-of-x equals 1 over 1 plus e-to-the-negative-x. Smooth. Bounded. Looks perfect."
+[Scene 2 | 3–10s]
+"Imagine feeding AI a photo of a dog. Inside its brain — millions of tiny dials called weights. All starting completely random."
 
-[Scene 3 | 9–15s]
-"But look at its derivative — the gradient signal. It peaks at just 0.25... and collapses to nearly ZERO at the extremes."
+[Scene 3 | 10–18s]
+"AI makes its first guess: CAT. Wrong! See that glowing red error bar? That's how far off it is — the gap between prediction and reality."
 
-[Scene 4 | 15–20s]
-"During backpropagation, gradients multiply across layers. 0.25 times 0.25 times 0.25 — you get 0.016. One more layer? Just 0.004. It vanishes."
+[Scene 4 | 18–26s]
+"Now watch. That error signal travels BACKWARD through the network. This is called Backpropagation. Every single dial gets a tiny nudge."
 
-[Scene 5 | 20–26s]
-"By the time you reach the early layers, the gradient is essentially 0.004. Those layers receive NO useful signal — they stop learning completely."
+[Scene 5 | 26–34s]
+"The dials adjust. AI guesses again — this time it says 'dog.' Look — the error bar is shrinking. It's learning."
 
-[Scene 6 | 26–32s]
-"But sigmoid IS still valuable — at the output layer of a binary classifier, it converts any raw score into a clean probability between 0 and 1."
+[Scene 6 | 34–42s]
+"Fast forward — ten thousand images trained. The error bar has nearly vanished. Now? It predicts dog correctly. Every. Single. Time."
 
-[Scene 7 | 32–37s]
-"So: use sigmoid ONLY at the output layer for binary classification. In hidden layers of deep networks — NEVER. Use ReLU instead."
+[Scene 7 | 42–52s]
+"That's literally it. AI is just a machine that adjusts millions of dials until it stops being wrong. That is the ENTIRE secret. Mind blown."
 
-[Scene 8 | 37–43s]
-"Thanks for watching! If you found this helpful, like this video and subscribe to Applie AI Lab for more AI concepts explained simply!"
+[Scene 8 | 52–60s]
+"Thanks for watching! If you found this helpful, like this video and subscribe to Applie AI Lab — for more AI concepts explained simply!"

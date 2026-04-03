@@ -43,31 +43,12 @@ Script tone: storytelling, energetic, beginner-friendly. No heavy math. Include 
 
 ---
 
-# 🎬 PART 1 — NARRATION SCRIPT (TIMESTAMPED SCENES)
-
-Create a **high-retention YouTube Shorts narration script**.
-
-### Format Requirements
-
-Each scene MUST follow this exact format:
-
-[Scene 1 | 0–4s]  
-Narration text...
-
-[Scene 2 | 4–8s]  
-Narration text...
-
-[Scene 3 | 8–14s]  
-Narration text...
-
----
-
 ### Scene Rules
 
 • Each paragraph = **one animation scene**  
 • Use **clear timestamps** so audio can sync perfectly  
 • Scenes should typically be **3–8 seconds** long  
-• Total runtime should be **20–40 seconds (ideal for Shorts)**  
+• Total runtime should be **30–90 seconds (ideal for Shorts)**  
 • Scenes should prioritize clarity over speed. If needed, extend visual display time even if the animation movement is short.
 
 ---
@@ -389,5 +370,51 @@ Importantt to add at the end of the video:
 my channel name is Applie AI lab so mention at the end
 
 "Thanks for watching! If you found this helpful, like this video and subscribe to Applie AI Lab for more AI concepts explained simply!"
+ # ─────────────────────────────────────────────
+    # Scene 8 — OUTRO (52–60s)
+    # ─────────────────────────────────────────────
+    def scene_8(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        thanks = Text("Thanks for watching!", font_size=40, color=WHITE, weight=BOLD)
+        thanks.shift(UP * 3.0)
+
+        # Channel name with glowing box
+        ch_bg = RoundedRectangle(
+            corner_radius=0.4, width=4.0, height=1.1,
+            fill_color="#1a2a4a", fill_opacity=0.9,
+            stroke_color=BLUE_B, stroke_width=2.5
+        )
+        ch_bg.shift(UP * 1.5)
+
+        channel = Text("Applie AI Lab", font_size=44, color=YELLOW, weight=BOLD)
+        channel.move_to(ch_bg.get_center())
+
+        sub_text = Text("Like & Subscribe", font_size=34, color=GREEN, weight=BOLD)
+        sub_text.shift(DOWN * 0.2)
+
+        desc = Text("for AI concepts explained simply!", font_size=22, color=WHITE)
+        desc.next_to(sub_text, DOWN, buff=0.32)
+
+        cta_row = VGroup(
+            Text("LIKE", font_size=26, color=BLUE_B, weight=BOLD),
+            Text("SUBSCRIBE", font_size=26, color=RED_B, weight=BOLD),
+            Text("NOTIFY", font_size=26, color=YELLOW, weight=BOLD),
+        ).arrange(RIGHT, buff=0.45)
+        cta_row.shift(DOWN * 2.0)
+
+        self.play(FadeIn(thanks, shift=DOWN * 0.2), run_time=0.55)
+        self.play(Create(ch_bg), run_time=0.45)
+        self.play(Write(channel), run_time=0.8)
+        self.play(FadeIn(sub_text), run_time=0.45)
+        self.play(FadeIn(desc), run_time=0.4)
+        self.play(
+            LaggedStart(*[FadeIn(c) for c in cta_row], lag_ratio=0.3),
+            run_time=0.7
+        )
+        self.play(Indicate(channel, scale_factor=1.06, color=YELLOW), run_time=0.7)
+        self.wait(max(0.1, duration - 4.1))
+this is manim code for my outro always use this so it is same in each short
+
 
 At the very end verify the code once to see if it is correct if any scene is wrong or not working fix it and return the final code.

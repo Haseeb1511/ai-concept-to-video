@@ -23,391 +23,407 @@ class RenderScene(Scene):
             self.scene_8(duration)
 
     # ─────────────────────────────────────────────
-    # SCENE 1 — Deep network failing (0–4s)
+    # Scene 1 — HOOK (0–3s)
     # ─────────────────────────────────────────────
     def scene_1(self, duration):
-        question = Text(
-            "Why did Sigmoid\nKILL Deep Networks?",
-            font_size=40,
-            color=RED_C,
-            line_spacing=1.3,
-        )
-        question.to_edge(UP, buff=0.9)
+        self.camera.background_color = "#0a0a1e"
 
-        # Build 4-layer neural network
-        layer_sizes = [3, 4, 4, 2]
-        layer_x     = [-2.2, -0.75, 0.75, 2.2]
-        y_base       = -0.6
-        r            = 0.16
+        hook = Text("Wait…", font_size=72, color=YELLOW, weight=BOLD)
+        hook.shift(UP * 1.8)
 
-        node_groups = []
-        all_circles = VGroup()
-        for li, (lx, n) in enumerate(zip(layer_x, layer_sizes)):
-            col = []
-            for j in range(n):
-                y = y_base + (j - (n - 1) / 2) * 0.85
-                node = Circle(
-                    radius=r, color=BLUE_C,
-                    fill_color=BLUE_C, fill_opacity=0.5, stroke_width=2
-                )
-                node.move_to([lx, y, 0])
-                all_circles.add(node)
-                col.append(node)
-            node_groups.append(col)
+        question = Text("This is ALL AI does?", font_size=40, color=WHITE)
+        question.next_to(hook, DOWN, buff=0.5)
 
-        # Sparse connections (first & last of next layer per node)
-        connections = VGroup()
-        for li in range(len(node_groups) - 1):
-            targets = [node_groups[li + 1][0], node_groups[li + 1][-1]]
-            for n1 in node_groups[li]:
-                for n2 in targets:
-                    line = Line(
-                        n1.get_center(), n2.get_center(),
-                        stroke_width=0.8, color=GRAY, stroke_opacity=0.45
-                    )
-                    connections.add(line)
+        sub = Text("It's insanely simple.", font_size=34, color=GREEN, weight=BOLD)
+        sub.next_to(question, DOWN, buff=0.5)
 
-        # Red crosses on first 3 layers → failed learning
-        fail_marks = VGroup()
-        for li in range(3):
-            for node in node_groups[li]:
-                cross = Cross(node, color=RED, stroke_width=3)
-                fail_marks.add(cross)
-
-        fail_label = Text("Learning STOPPED!", font_size=28, color=RED)
-        fail_label.next_to(all_circles, DOWN, buff=0.7)
-
-        self.play(FadeIn(question), run_time=duration * 0.25)
-        self.play(Create(connections), Create(all_circles), run_time=duration * 0.35)
-        self.play(FadeIn(fail_marks), run_time=duration * 0.2)
-        self.play(FadeIn(fail_label), run_time=duration * 0.2)
+        self.play(Write(hook), run_time=0.6)
+        self.play(FadeIn(question, shift=UP * 0.2), run_time=0.6)
+        self.play(FadeIn(sub, shift=UP * 0.2), run_time=0.5)
+        self.wait(max(0.1, duration - 1.7))
 
     # ─────────────────────────────────────────────
-    # SCENE 2 — Sigmoid curve & formula (4–9s)
+    # Scene 2 — Dog + AI Brain + Dials (3–10s)
     # ─────────────────────────────────────────────
     def scene_2(self, duration):
-        title = Text("The Sigmoid Function", font_size=36, color=YELLOW)
-        title.to_edge(UP, buff=0.8)
+        self.camera.background_color = "#0a0a1e"
 
-        formula = MathTex(
-            r"\sigma(x) = \frac{1}{1 + e^{-x}}",
-            font_size=38, color=YELLOW
+        # Dog image placeholder (top)
+        dog_box = RoundedRectangle(
+            corner_radius=0.3, width=2.4, height=1.8,
+            color=ORANGE, fill_color=ORANGE, fill_opacity=0.12
         )
-        formula.next_to(title, DOWN, buff=0.4)
+        dog_box.shift(UP * 2.8)
 
-        axes = Axes(
-            x_range=[-5, 5, 1],
-            y_range=[0, 1.2, 0.25],
-            x_length=5.4,
-            y_length=3.8,
-            axis_config={"color": WHITE, "stroke_width": 2, "include_numbers": False},
-        )
-        axes.next_to(formula, DOWN, buff=0.35)
+        dog_text = Text("Dog Photo", font_size=28, color=ORANGE)
+        dog_text.move_to(dog_box.get_center())
 
-        x_lbl = Text("x", font_size=22, color=WHITE).next_to(axes, RIGHT, buff=0.1)
-        y_lbl = (
-            Text("σ(x)", font_size=22, color=WHITE)
-            .next_to(axes, UP, buff=0.05)
-            .shift(LEFT * 1.8)
+        label_dog = Text('"dog"', font_size=22, color=WHITE)
+        label_dog.next_to(dog_box, DOWN, buff=0.12)
+
+        # Arrow from dog to brain
+        arr = Arrow(
+            dog_box.get_bottom() + DOWN * 0.05,
+            dog_box.get_bottom() + DOWN * 0.85,
+            color=WHITE, buff=0, stroke_width=3
         )
 
-        sigmoid_curve = axes.plot(
-            lambda x: 1 / (1 + np.exp(-x)), color=BLUE, stroke_width=4
+        # AI Brain box (middle)
+        brain_box = RoundedRectangle(
+            corner_radius=0.3, width=3.2, height=2.5,
+            color=BLUE, fill_color=BLUE, fill_opacity=0.08
         )
+        brain_box.shift(DOWN * 0.9)
 
-        # Dashed asymptotes
-        y0_dash = DashedLine(
-            axes.c2p(-5, 0), axes.c2p(5, 0),
-            color=GRAY, dash_length=0.12, stroke_width=1.5
-        )
-        y1_dash = DashedLine(
-            axes.c2p(-5, 1), axes.c2p(5, 1),
-            color=GRAY, dash_length=0.12, stroke_width=1.5
-        )
-        lbl_0 = Text("0", font_size=20, color=GRAY).next_to(axes.c2p(-5, 0), LEFT, buff=0.12)
-        lbl_1 = Text("1", font_size=20, color=GRAY).next_to(axes.c2p(-5, 1), LEFT, buff=0.12)
+        brain_title = Text("AI Brain", font_size=32, color=BLUE_B, weight=BOLD)
+        brain_title.next_to(brain_box, UP, buff=0.14)
 
-        range_label = Text("Output always in  [0, 1]", font_size=26, color=GREEN)
-        range_label.next_to(axes, DOWN, buff=0.35)
+        # Dials (5 × 3 grid of circles inside brain)
+        dials = VGroup()
+        cx = brain_box.get_center()
+        for i in range(5):
+            for j in range(3):
+                d = Circle(radius=0.14, color=TEAL, fill_opacity=0.85)
+                d.move_to(cx + RIGHT * (i * 0.52 - 1.04) + UP * (j * 0.55 - 0.55))
+                dials.add(d)
 
-        self.play(FadeIn(title), run_time=duration * 0.12)
-        self.play(Write(formula), run_time=duration * 0.2)
-        self.play(Create(axes), FadeIn(x_lbl), FadeIn(y_lbl), run_time=duration * 0.2)
+        dial_label = Text("Millions of weights (dials)", font_size=20, color=TEAL)
+        dial_label.next_to(brain_box, DOWN, buff=0.2)
+
+        # Animate
+        self.play(FadeIn(dog_box), Write(dog_text), run_time=0.6)
+        self.play(FadeIn(label_dog), run_time=0.3)
+        self.play(GrowArrow(arr), run_time=0.5)
+        self.play(Create(brain_box), Write(brain_title), run_time=0.7)
         self.play(
-            Create(sigmoid_curve),
-            Create(y0_dash), Create(y1_dash),
-            FadeIn(lbl_0), FadeIn(lbl_1),
-            run_time=duration * 0.3,
+            LaggedStart(*[FadeIn(d) for d in dials], lag_ratio=0.04),
+            run_time=1.5
         )
-        self.play(FadeIn(range_label), run_time=duration * 0.18)
+        self.play(FadeIn(dial_label), run_time=0.4)
+        self.wait(max(0.1, duration - 4.0))
 
     # ─────────────────────────────────────────────
-    # SCENE 3 — Derivative curve (9–15s)
+    # Scene 3 — Wrong Guess + Error Bar (10–18s)
     # ─────────────────────────────────────────────
     def scene_3(self, duration):
-        title = Text("Sigmoid Derivative (Gradient)", font_size=32, color=ORANGE)
-        title.to_edge(UP, buff=0.8)
+        self.camera.background_color = "#0a0a1e"
 
-        formula = MathTex(
-            r"\sigma'(x) = \sigma(x)\,(1 - \sigma(x))",
-            font_size=30, color=ORANGE
-        )
-        formula.next_to(title, DOWN, buff=0.35)
+        title = Text("AI's First Guess:", font_size=36, color=WHITE, weight=BOLD)
+        title.shift(UP * 3.0)
 
-        axes = Axes(
-            x_range=[-5, 5, 1],
-            y_range=[0, 0.32, 0.1],
-            x_length=5.4,
-            y_length=3.6,
-            axis_config={"color": WHITE, "stroke_width": 2, "include_numbers": False},
-        )
-        axes.next_to(formula, DOWN, buff=0.35)
+        # Prediction row
+        pred_label = Text("Prediction:", font_size=26, color=GRAY)
+        pred_label.shift(UP * 1.8 + LEFT * 0.4)
+        pred_val = Text("CAT", font_size=50, color=RED, weight=BOLD)
+        pred_val.next_to(pred_label, RIGHT, buff=0.3)
 
-        def sig(x):
-            return 1 / (1 + np.exp(-x))
+        # Reality row
+        real_label = Text("Reality:", font_size=26, color=GRAY)
+        real_label.shift(UP * 0.6 + LEFT * 0.4)
+        real_val = Text("DOG", font_size=50, color=GREEN, weight=BOLD)
+        real_val.next_to(real_label, RIGHT, buff=0.3)
 
-        deriv_curve = axes.plot(
-            lambda x: sig(x) * (1 - sig(x)), color=ORANGE, stroke_width=4
-        )
+        # WRONG banner
+        wrong = Text("WRONG!", font_size=58, color=RED, weight=BOLD)
+        wrong.shift(DOWN * 0.7)
 
-        peak_dot = Dot(axes.c2p(0, 0.25), color=RED, radius=0.12)
-        peak_lbl = Text("MAX = 0.25", font_size=22, color=RED)
-        peak_lbl.next_to(peak_dot, UR, buff=0.1)
-
-        flat_warn = Text("Near-ZERO gradient at extremes!", font_size=24, color=RED_C)
-        flat_warn.next_to(axes, DOWN, buff=0.35)
-
-        self.play(FadeIn(title), run_time=duration * 0.12)
-        self.play(Write(formula), run_time=duration * 0.15)
-        self.play(Create(axes), run_time=duration * 0.18)
-        self.play(Create(deriv_curve), run_time=duration * 0.28)
-        self.play(FadeIn(peak_dot), FadeIn(peak_lbl), run_time=duration * 0.12)
-        self.play(FadeIn(flat_warn), run_time=duration * 0.15)
-
-    # ─────────────────────────────────────────────
-    # SCENE 4 — Vanishing gradient chain (15–20s)
-    # ─────────────────────────────────────────────
-    def scene_4(self, duration):
-        title = Text("Vanishing Gradient", font_size=40, color=RED)
-        title.to_edge(UP, buff=0.8)
-
-        subtitle = Text("Gradients multiply across layers:", font_size=24, color=WHITE)
-        subtitle.next_to(title, DOWN, buff=0.4)
-
-        steps = [
-            ("Output:",  "gradient = 0.25",               YELLOW),
-            ("Layer 3:", "0.25  ×  0.25  = 0.0625",       YELLOW),
-            ("Layer 2:", "0.0625  ×  0.25  = 0.016",      ORANGE),
-            ("Layer 1:", "0.016  ×  0.25  ≈  0.004",      RED),
-        ]
-
-        rows = VGroup()
-        for layer_name, calc, col in steps:
-            row = Text(f"{layer_name}   {calc}", font_size=22, color=col)
-            rows.add(row)
-        rows.arrange(DOWN, aligned_edge=LEFT, buff=0.3)
-        rows.next_to(subtitle, DOWN, buff=0.45)
-
-        bar_label = Text("Gradient magnitude:", font_size=22, color=WHITE)
-        bar_label.next_to(rows, DOWN, buff=0.45)
+        # Error bar
+        err_lbl = Text("Error Gap", font_size=24, color=RED)
+        err_lbl.shift(DOWN * 1.85)
 
         bar_bg = Rectangle(
-            width=4.5, height=0.38, color=GRAY, fill_opacity=0.25, stroke_width=1
+            width=3.8, height=0.45,
+            fill_color="#222222", fill_opacity=0.8,
+            stroke_color=GRAY, stroke_width=1
         )
-        bar_bg.next_to(bar_label, DOWN, buff=0.22)
+        bar_bg.shift(DOWN * 2.55)
 
-        bar_green = Rectangle(
-            width=4.5, height=0.38, color=GREEN, fill_opacity=0.88, stroke_width=0
+        bar_fill = Rectangle(
+            width=3.6, height=0.41,
+            fill_color=RED, fill_opacity=1.0, stroke_width=0
         )
-        bar_green.move_to(bar_bg.get_center())
+        bar_fill.align_to(bar_bg, LEFT).shift(RIGHT * 0.1)
+        bar_fill.shift(DOWN * 2.55)
 
-        # bar_red: thin sliver aligned to left edge of bar_bg
-        bar_red = Rectangle(
-            width=0.18, height=0.38, color=RED, fill_opacity=0.88, stroke_width=0
-        )
-        bar_red.align_to(bar_bg, LEFT)
-        bar_red.set_y(bar_bg.get_y())
-
-        self.play(FadeIn(title), run_time=duration * 0.1)
-        self.play(FadeIn(subtitle), run_time=duration * 0.1)
-        for row in rows:
-            self.play(FadeIn(row), run_time=duration * 0.1)
-        self.play(
-            FadeIn(bar_label), Create(bar_bg), FadeIn(bar_green),
-            run_time=duration * 0.1,
-        )
-        self.play(Transform(bar_green, bar_red), run_time=duration * 0.3)
+        self.play(FadeIn(title), run_time=0.4)
+        self.play(FadeIn(pred_label), FadeIn(pred_val), run_time=0.6)
+        self.play(FadeIn(real_label), FadeIn(real_val), run_time=0.6)
+        self.play(Write(wrong), run_time=0.6)
+        self.play(FadeIn(err_lbl), Create(bar_bg), run_time=0.4)
+        self.play(GrowFromEdge(bar_fill, LEFT), run_time=0.9)
+        self.play(Indicate(wrong, color=RED, scale_factor=1.1), run_time=0.6)
+        self.wait(max(0.1, duration - 4.1))
 
     # ─────────────────────────────────────────────
-    # SCENE 5 — Early layers frozen (20–26s)
+    # Scene 4 — Backpropagation (18–26s)
+    # ─────────────────────────────────────────────
+    def scene_4(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        title = Text("Backpropagation", font_size=40, color=YELLOW, weight=BOLD)
+        title.shift(UP * 3.4)
+
+        subtitle = Text("Error signal flows BACKWARD", font_size=24, color=WHITE)
+        subtitle.next_to(title, DOWN, buff=0.22)
+
+        # 3-layer network — fits within ±1.5 x-range
+        layer_x = [-1.5, 0.0, 1.5]
+        node_colors = [GREEN_C, BLUE_C, RED_C]
+        node_groups = []
+
+        for li in range(3):
+            grp = VGroup()
+            for ni in range(3):
+                n = Circle(radius=0.22, color=node_colors[li], fill_opacity=0.85)
+                n.move_to(RIGHT * layer_x[li] + UP * (ni * 1.0 - 1.0))
+                grp.add(n)
+            node_groups.append(grp)
+
+        # Forward connections (thin gray)
+        conns = VGroup()
+        for l in range(2):
+            for i in range(3):
+                for j in range(3):
+                    ln = Line(
+                        node_groups[l][i].get_center(),
+                        node_groups[l + 1][j].get_center(),
+                        stroke_width=0.8, color=GRAY, stroke_opacity=0.45
+                    )
+                    conns.add(ln)
+
+        # Backward arrows (red, below network)
+        back_arr1 = Arrow(
+            RIGHT * layer_x[2] + DOWN * 1.85,
+            RIGHT * layer_x[1] + DOWN * 1.85,
+            color=RED_A, stroke_width=5, buff=0.28
+        )
+        back_arr2 = Arrow(
+            RIGHT * layer_x[1] + DOWN * 1.85,
+            RIGHT * layer_x[0] + DOWN * 1.85,
+            color=RED_A, stroke_width=5, buff=0.28
+        )
+
+        nudge = Text("Each dial gets a tiny nudge!", font_size=24, color=TEAL)
+        nudge.shift(DOWN * 3.1)
+
+        self.play(FadeIn(title), FadeIn(subtitle), run_time=0.6)
+        self.play(Create(conns), run_time=0.7)
+        self.play(
+            LaggedStart(*[Create(ng) for ng in node_groups], lag_ratio=0.2),
+            run_time=0.9
+        )
+        self.play(GrowArrow(back_arr1), run_time=0.55)
+        self.play(GrowArrow(back_arr2), run_time=0.55)
+        self.play(
+            *[Indicate(n, color=RED, scale_factor=1.18)
+              for grp in node_groups[:2] for n in grp],
+            run_time=1.0
+        )
+        self.play(FadeIn(nudge), run_time=0.5)
+        self.wait(max(0.1, duration - 4.8))
+
+    # ─────────────────────────────────────────────
+    # Scene 5 — Dials Adjust + Shrinking Error (26–34s)
     # ─────────────────────────────────────────────
     def scene_5(self, duration):
-        title = Text("Early Layers Stop Learning", font_size=32, color=RED)
-        title.to_edge(UP, buff=0.8)
+        self.camera.background_color = "#0a0a1e"
 
-        layer_data = [
-            ("Output Layer",    "Gradient = 1.000", GREEN),
-            ("Layer 3",         "Gradient = 0.250", YELLOW),
-            ("Layer 2",         "Gradient = 0.016", ORANGE),
-            ("Layer 1 (Input)", "Gradient = 0.004", RED),
-        ]
+        title = Text("Adjusting the Dials…", font_size=36, color=WHITE, weight=BOLD)
+        title.shift(UP * 3.3)
 
-        boxes = VGroup()
-        for name, grad_str, col in layer_data:
-            box = Rectangle(
-                width=5.2, height=0.82,
-                color=col, fill_opacity=0.15, stroke_width=2
-            )
-            name_txt = Text(name, font_size=20, color=WHITE)
-            grad_txt = Text(grad_str, font_size=20, color=col)
-            name_txt.move_to(box.get_left() + RIGHT * 1.35)
-            grad_txt.move_to(box.get_right() + LEFT * 1.35)
-            boxes.add(VGroup(box, name_txt, grad_txt))
+        # Dials grid (6 × 3)
+        dials = VGroup()
+        for i in range(6):
+            for j in range(3):
+                d = Circle(radius=0.16, color=TEAL, fill_opacity=0.75)
+                d.move_to(UP * 1.85 + RIGHT * (i * 0.50 - 1.25) + UP * (j * 0.50 - 0.50))
+                dials.add(d)
 
-        boxes.arrange(DOWN, buff=0.3)
-        boxes.next_to(title, DOWN, buff=0.5)
+        # New guess
+        guess_row = VGroup(
+            Text("New Guess:", font_size=28, color=WHITE),
+            Text('"dog"', font_size=40, color=YELLOW, weight=BOLD)
+        ).arrange(RIGHT, buff=0.3)
+        guess_row.shift(DOWN * 0.3)
 
-        frozen = Text("Layer 1: NO learning signal!", font_size=24, color=RED_C)
-        frozen.next_to(boxes, DOWN, buff=0.4)
+        closer = Text("Getting closer!", font_size=28, color=GREEN, weight=BOLD)
+        closer.next_to(guess_row, DOWN, buff=0.3)
 
-        indicator = SurroundingRectangle(boxes[-1], color=RED, buff=0.06, stroke_width=3)
+        # Error bar shrinking
+        err_lbl = Text("Error", font_size=24, color=RED)
+        err_lbl.shift(DOWN * 1.85)
 
-        self.play(FadeIn(title), run_time=duration * 0.15)
-        for box in boxes:
-            self.play(FadeIn(box), run_time=duration * 0.1)
-        self.play(Create(indicator), FadeIn(frozen), run_time=duration * 0.2)
-        self.wait(duration * 0.25)
+        bar_bg = Rectangle(
+            width=3.8, height=0.42,
+            fill_color="#222222", fill_opacity=0.8,
+            stroke_color=GRAY, stroke_width=1
+        )
+        bar_bg.shift(DOWN * 2.55)
+
+        bar_full = Rectangle(
+            width=3.6, height=0.38,
+            fill_color=RED, fill_opacity=1.0, stroke_width=0
+        )
+        bar_full.align_to(bar_bg, LEFT).shift(RIGHT * 0.1).shift(DOWN * 2.55)
+
+        bar_half = Rectangle(
+            width=1.8, height=0.38,
+            fill_color=ORANGE, fill_opacity=1.0, stroke_width=0
+        )
+        bar_half.align_to(bar_bg, LEFT).shift(RIGHT * 0.1).shift(DOWN * 2.55)
+
+        self.play(FadeIn(title), run_time=0.4)
+        self.play(
+            LaggedStart(*[FadeIn(d) for d in dials], lag_ratio=0.04),
+            run_time=0.9
+        )
+        self.play(
+            *[d.animate.set_fill(GREEN, opacity=0.9) for d in dials[::3]],
+            *[d.animate.set_fill(BLUE_C, opacity=0.9) for d in dials[1::3]],
+            run_time=0.7
+        )
+        self.play(FadeIn(guess_row), run_time=0.5)
+        self.play(FadeIn(closer), run_time=0.4)
+        self.play(Create(bar_bg), Create(bar_full), run_time=0.4)
+        self.play(Transform(bar_full, bar_half), run_time=1.1)
+        self.wait(max(0.1, duration - 4.4))
 
     # ─────────────────────────────────────────────
-    # SCENE 6 — Binary classifier output (26–32s)
+    # Scene 6 — 10,000 Images / Error Vanished (34–42s)
     # ─────────────────────────────────────────────
     def scene_6(self, duration):
-        title = Text("Where Sigmoid DOES Work", font_size=34, color=GREEN)
-        title.to_edge(UP, buff=0.8)
+        self.camera.background_color = "#0a0a1e"
 
-        use_case = Text(
-            "Binary Classification — Output Layer Only",
-            font_size=22, color=WHITE
+        title = Text("10,000 Images Later…", font_size=38, color=WHITE, weight=BOLD)
+        title.shift(UP * 3.3)
+
+        counter_label = Text("Trained on:", font_size=26, color=GRAY)
+        counter_label.shift(UP * 2.2)
+
+        def make_ctr(val_str):
+            t = Text(val_str, font_size=40, color=YELLOW, weight=BOLD)
+            t.next_to(counter_label, DOWN, buff=0.15)
+            return t
+
+        c0 = make_ctr("0 images")
+        c1 = make_ctr("1,000 images")
+        c2 = make_ctr("5,000 images")
+        c3 = make_ctr("10,000 images")
+
+        # Error bar (starts full red → shrinks to tiny green)
+        err_lbl = Text("Error", font_size=26, color=WHITE)
+        err_lbl.shift(UP * 0.6)
+
+        bar_bg = Rectangle(
+            width=3.8, height=0.46,
+            fill_color="#222222", fill_opacity=0.8,
+            stroke_color=GRAY, stroke_width=1
         )
-        use_case.next_to(title, DOWN, buff=0.45)
+        bar_bg.shift(UP * 0.0)
 
-        # Flow: raw score → σ → probability
-        in_box = Rectangle(
-            width=2.2, height=0.9, color=BLUE, fill_opacity=0.25, stroke_width=2
+        bar_init = Rectangle(
+            width=3.6, height=0.42,
+            fill_color=RED, fill_opacity=1.0, stroke_width=0
         )
-        in_txt = Text("z = 2.1", font_size=24, color=WHITE)
-        in_txt.move_to(in_box)
-        in_grp = VGroup(in_box, in_txt)
+        bar_init.align_to(bar_bg, LEFT).shift(RIGHT * 0.1)
 
-        arrow = Arrow(ORIGIN, RIGHT * 1.2, color=WHITE, buff=0, stroke_width=3)
-        sigma_lbl = MathTex(r"\sigma(x)", font_size=32, color=YELLOW)
-
-        out_box = Rectangle(
-            width=2.2, height=0.9, color=GREEN, fill_opacity=0.25, stroke_width=2
+        bar_final = Rectangle(
+            width=0.22, height=0.42,
+            fill_color=GREEN, fill_opacity=1.0, stroke_width=0
         )
-        out_txt = Text("P = 0.89", font_size=24, color=GREEN)
-        out_txt.move_to(out_box)
-        out_grp = VGroup(out_box, out_txt)
+        bar_final.align_to(bar_bg, LEFT).shift(RIGHT * 0.1)
 
-        flow = VGroup(in_grp, arrow, out_grp)
-        flow.arrange(RIGHT, buff=0.3)
-        flow.next_to(use_case, DOWN, buff=0.5)
-        sigma_lbl.next_to(arrow, UP, buff=0.15)
+        # Prediction
+        pred_row = VGroup(
+            Text("Prediction:", font_size=26, color=GRAY),
+            Text('"dog"  ✓', font_size=38, color=GREEN, weight=BOLD)
+        ).arrange(RIGHT, buff=0.3)
+        pred_row.shift(DOWN * 1.3)
 
-        decision_box = Rectangle(
-            width=5.2, height=0.82, color=GREEN, fill_opacity=0.12, stroke_width=2
-        )
-        decision_txt = Text(
-            "P > 0.5  →  Class A     |     P < 0.5  →  Class B",
-            font_size=18, color=GREEN
-        )
-        decision_txt.move_to(decision_box)
-        decision_grp = VGroup(decision_box, decision_txt)
-        decision_grp.next_to(flow, DOWN, buff=0.45)
+        every = Text("Every. Single. Time.", font_size=30, color=YELLOW, weight=BOLD)
+        every.shift(DOWN * 2.25)
 
-        prob_note = Text("Output = probability  (always 0 to 1)", font_size=24, color=YELLOW)
-        prob_note.next_to(decision_grp, DOWN, buff=0.35)
-
-        self.play(FadeIn(title), run_time=duration * 0.12)
-        self.play(FadeIn(use_case), run_time=duration * 0.1)
-        self.play(FadeIn(in_grp), run_time=duration * 0.12)
-        self.play(GrowArrow(arrow), FadeIn(sigma_lbl), run_time=duration * 0.18)
-        self.play(FadeIn(out_grp), run_time=duration * 0.12)
-        self.play(FadeIn(decision_grp), run_time=duration * 0.18)
-        self.play(FadeIn(prob_note), run_time=duration * 0.18)
+        self.play(FadeIn(title), run_time=0.4)
+        self.play(FadeIn(counter_label), FadeIn(c0), run_time=0.4)
+        self.play(Transform(c0, c1), run_time=0.25)
+        self.play(Transform(c0, c2), run_time=0.25)
+        self.play(Transform(c0, c3), run_time=0.35)
+        self.play(FadeIn(err_lbl), Create(bar_bg), Create(bar_init), run_time=0.5)
+        self.play(Transform(bar_init, bar_final), run_time=1.4)
+        self.play(FadeIn(pred_row), run_time=0.6)
+        self.play(FadeIn(every), run_time=0.5)
+        self.wait(max(0.1, duration - 4.6))
 
     # ─────────────────────────────────────────────
-    # SCENE 7 — Key takeaway card (32–37s)
+    # Scene 7 — WOW MOMENT (42–52s)
     # ─────────────────────────────────────────────
     def scene_7(self, duration):
-        title = Text("Key Takeaway", font_size=42, color=YELLOW)
-        title.to_edge(UP, buff=0.8)
+        self.camera.background_color = "#0a0a1e"
 
-        # Green card — good use
-        good_box = Rectangle(
-            width=5.5, height=1.5, color=GREEN, fill_opacity=0.18, stroke_width=2
-        )
-        good_title = Text("USE Sigmoid:", font_size=26, color=GREEN)
-        good_desc  = Text(
-            "Output layer  —  binary classification",
-            font_size=22, color=WHITE
-        )
-        good_title.move_to(good_box.get_top() + DOWN * 0.38)
-        good_desc.move_to(good_box.get_center() + DOWN * 0.28)
-        good_grp = VGroup(good_box, good_title, good_desc)
+        lines = VGroup(
+            Text("AI is just a machine", font_size=34, color=WHITE),
+            Text("that adjusts", font_size=34, color=WHITE),
+            Text("millions of dials", font_size=42, color=YELLOW, weight=BOLD),
+            Text("until it stops", font_size=34, color=WHITE),
+            Text("being wrong.", font_size=42, color=RED, weight=BOLD),
+        ).arrange(DOWN, buff=0.32)
+        lines.shift(UP * 0.6)
 
-        # Red card — bad use
-        bad_box = Rectangle(
-            width=5.5, height=1.5, color=RED, fill_opacity=0.18, stroke_width=2
-        )
-        bad_title = Text("AVOID Sigmoid:", font_size=26, color=RED)
-        bad_desc  = Text(
-            "Hidden layers in deep networks",
-            font_size=22, color=WHITE
-        )
-        bad_title.move_to(bad_box.get_top() + DOWN * 0.38)
-        bad_desc.move_to(bad_box.get_center() + DOWN * 0.28)
-        bad_grp = VGroup(bad_box, bad_title, bad_desc)
+        secret = Text("That's the ENTIRE secret.", font_size=32, color=GREEN, weight=BOLD)
+        secret.next_to(lines, DOWN, buff=0.45)
 
-        cards = VGroup(good_grp, bad_grp)
-        cards.arrange(DOWN, buff=0.45)
-        cards.next_to(title, DOWN, buff=0.5)
+        mind_blown = Text("Mind = Blown", font_size=28, color=TEAL)
+        mind_blown.next_to(secret, DOWN, buff=0.28)
 
-        relu_note = Text("Use ReLU for deep hidden layers!", font_size=26, color=BLUE_C)
-        relu_note.next_to(cards, DOWN, buff=0.45)
+        for i, line in enumerate(lines):
+            self.play(FadeIn(line, shift=UP * 0.15), run_time=0.45)
 
-        self.play(FadeIn(title), run_time=duration * 0.18)
-        self.play(FadeIn(good_grp), run_time=duration * 0.25)
-        self.play(FadeIn(bad_grp), run_time=duration * 0.25)
-        self.play(FadeIn(relu_note), run_time=duration * 0.22)
-        self.wait(duration * 0.1)
+        self.play(Write(secret), run_time=0.8)
+        self.play(FadeIn(mind_blown), run_time=0.4)
+        self.play(Indicate(lines[2], scale_factor=1.08, color=YELLOW), run_time=0.7)
+        self.wait(max(0.1, duration - 5.4))
 
     # ─────────────────────────────────────────────
-    # SCENE 8 — Outro (37–43s)
+    # Scene 8 — OUTRO (52–60s)
     # ─────────────────────────────────────────────
     def scene_8(self, duration):
-        channel_name = Text("Applie AI Lab", font_size=52, color=YELLOW)
-        channel_name.to_edge(UP, buff=1.6)
+        self.camera.background_color = "#0a0a1e"
 
-        divider = Line(LEFT * 2.6, RIGHT * 2.6, color=YELLOW, stroke_width=2)
-        divider.next_to(channel_name, DOWN, buff=0.45)
+        thanks = Text("Thanks for watching!", font_size=40, color=WHITE, weight=BOLD)
+        thanks.shift(UP * 3.0)
 
-        thanks = Text("Thanks for watching!", font_size=32, color=WHITE)
-        thanks.next_to(divider, DOWN, buff=0.55)
-
-        cta = Text(
-            "Like & Subscribe for more\nAI concepts explained simply!",
-            font_size=26,
-            color=WHITE,
-            line_spacing=1.5,
+        # Channel name with glowing box
+        ch_bg = RoundedRectangle(
+            corner_radius=0.4, width=4.0, height=1.1,
+            fill_color="#1a2a4a", fill_opacity=0.9,
+            stroke_color=BLUE_B, stroke_width=2.5
         )
-        cta.next_to(thanks, DOWN, buff=0.45)
+        ch_bg.shift(UP * 1.5)
 
-        sub_box = SurroundingRectangle(cta, color=YELLOW, buff=0.3, stroke_width=3)
+        channel = Text("Applie AI Lab", font_size=44, color=YELLOW, weight=BOLD)
+        channel.move_to(ch_bg.get_center())
 
-        self.play(FadeIn(channel_name), run_time=duration * 0.22)
-        self.play(Create(divider), run_time=duration * 0.13)
-        self.play(FadeIn(thanks), run_time=duration * 0.18)
-        self.play(FadeIn(cta), run_time=duration * 0.22)
-        self.play(Create(sub_box), run_time=duration * 0.18)
-        self.wait(duration * 0.07)
+        sub_text = Text("Like & Subscribe", font_size=34, color=GREEN, weight=BOLD)
+        sub_text.shift(DOWN * 0.2)
+
+        desc = Text("for AI concepts explained simply!", font_size=22, color=WHITE)
+        desc.next_to(sub_text, DOWN, buff=0.32)
+
+        cta_row = VGroup(
+            Text("LIKE", font_size=26, color=BLUE_B, weight=BOLD),
+            Text("SUBSCRIBE", font_size=26, color=RED_B, weight=BOLD),
+            Text("NOTIFY", font_size=26, color=YELLOW, weight=BOLD),
+        ).arrange(RIGHT, buff=0.45)
+        cta_row.shift(DOWN * 2.0)
+
+        self.play(FadeIn(thanks, shift=DOWN * 0.2), run_time=0.55)
+        self.play(Create(ch_bg), run_time=0.45)
+        self.play(Write(channel), run_time=0.8)
+        self.play(FadeIn(sub_text), run_time=0.45)
+        self.play(FadeIn(desc), run_time=0.4)
+        self.play(
+            LaggedStart(*[FadeIn(c) for c in cta_row], lag_ratio=0.3),
+            run_time=0.7
+        )
+        self.play(Indicate(channel, scale_factor=1.06, color=YELLOW), run_time=0.7)
+        self.wait(max(0.1, duration - 4.1))

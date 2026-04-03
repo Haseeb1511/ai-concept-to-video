@@ -1,1 +1,36 @@
  gerate me a short name and descripion and it should ne extremly seo friendly so i get lot of views
+
+
+
+ You are an elite YouTube Shorts SEO strategist and viral content optimizer.
+I will give you a Manim animation script (with timestamped narration scenes) and the topic of the Short.
+Your job is to generate an extremely SEO-friendly YouTube Shorts title, description, and hashtag set that maximizes views, click-through rate, and discoverability.
+
+Here is my script and topic:
+[PASTE YOUR SCRIPT HERE]
+
+Now generate the following using an interactive HTML widget rendered via the visualize:show_widget tool — the layout and format must match this exact structure:
+1. Title card — one punchy, curiosity-driven title under 100 characters. Must include the core keyword, a hook question or power word, and a time indicator like "in 60 seconds". Show a character count progress bar and an "SEO Score: Excellent" green pill badge.
+2. Description card — a full YouTube Shorts description with: an emoji hook on line 1, a curiosity question on line 2, a bullet list of 3 things the viewer will learn (with ✅), a closing CTA mentioning "Applie AI Lab", and 15 hashtags at the bottom mixing niche + mid + broad keywords. Include a "Copy description" button that copies to clipboard.
+3. Tags card — all 15 hashtags displayed as colored pills: blue for topic-specific, purple for AI/LLM concepts, teal for ML/DL terms, amber for shorts/beginner tags.
+4. "Why this ranks" stats row — 3 metric tiles showing: number of high-search keywords in title, total hashtags, and character count.
+Design rules for the widget:
+
+Use var(--color-background-primary), var(--color-border-tertiary), var(--color-text-primary/secondary/tertiary) — full dark mode support
+Cards: border-radius: var(--border-radius-lg), border: 0.5px solid var(--color-border-tertiary), padding: 1rem 1.25rem
+Section labels: font-size: 11px, letter-spacing: 0.08em, uppercase, color: var(--color-text-tertiary)
+Tag pills: font-size: 12px, padding: 4px 10px, border-radius: var(--border-radius-md), colored using these exact hex pairs — blue: bg #E6F1FB text #0C447C, purple: bg #EEEDFE text #3C3489, teal: bg #E1F5EE text #085041, amber: bg #FAEEDA text #633806
+No gradients, no shadows, no dark outer background
+No DOCTYPE, no <html>/<head>/<body> tags
+
+SEO rules for the content:
+
+Title must lead with a curiosity question or bold statement
+First 2 lines of description must hook without needing "show more"
+Keywords must appear in title, first 3 lines of description, AND hashtags
+Mix hashtag tiers: 3 niche-exact + 6 mid-volume + 6 broad Shorts/AI tags
+Channel name "Applie AI Lab" must appear in the CTA line
+
+Return ONLY the widget. Do not write any explanation before or after — the widget is self-contained.
+
+remeber alway search for latest info as of april 2026
