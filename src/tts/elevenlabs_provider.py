@@ -18,7 +18,7 @@ def generate_elevenlabs_tts(text: str, out_path: Path, api_key: str, voice_id: s
     }
     payload = {
         "text": text,
-        "model_id": "eleven_monolingual_v1",
+        "model_id": "eleven_multilingual_v2",
         "voice_settings": {"stability": 0.5, "similarity_boost": 0.75},
     }
     
@@ -35,6 +35,14 @@ def generate_elevenlabs_tts(text: str, out_path: Path, api_key: str, voice_id: s
         # For now, we write the bytes and let the node handle the pathing.
         print(f"ElevenLabs audio saved to {mp3_path}")
         
+    except requests.exceptions.HTTPError as e:
+        print(f"ElevenLabs HTTP Error: {e}")
+        try:
+            print(f"Details: {e.response.json()}")
+        except Exception:
+            pass
+        raise e
     except Exception as e:
         print(f"ElevenLabs TTS Error: {e}")
         raise e
+

@@ -26,39 +26,20 @@ Because of this pipeline, you must **STRICTLY follow all formatting and technica
 
 # 📥 INPUT TOPIC
 
-Input Topic for Manim YouTube Short: "How AI Actually Learns"
+Input Topic for Manim YouTube Short: "Supervised vs Unsupervised Learning"
 
-Generate a Manim YouTube Short script (8 scenes, 0–60s total) and full Python Manim code.
+Generate a Manim YouTube Short script (8 scenes, 0–60s) and full Python Manim code.
 
-[Scene 1 | 0–3s] HOOK — "Wait… this is ALL AI does? It's insanely simple."
-[Scene 2 | 3–10s] Show a dog photo labeled "dog". Animate millions of tiny dials (weights) inside a box called 'AI Brain'.
-[Scene 3 | 10–18s] Show AI's first guess: "cat" — WRONG. Visualize the gap between prediction and reality as a glowing red error bar.
-[Scene 4 | 18–26s] Animate the error signal flowing BACKWARD through the network — each dial gets a tiny nudge. Label this "Backpropagation".
-[Scene 5 | 26–34s] Show dials adjusting slightly. Next guess: "dog" — closer. Show error bar shrinking.
-[Scene 6 | 34–42s] Fast-forward: 10,000 images later — the error bar has nearly vanished. Show "dog" predicted correctly every time.
-[Scene 7 | 42–52s] WOW MOMENT — "AI is just a machine that adjusts millions of dials until it stops being wrong. That's the ENTIRE secret."
-[Scene 8 | 52–60s] Outro: "Thanks for watching! Like & subscribe to Applie AI Lab for AI concepts explained simply!"
+[Scene 1 | 0–3s] HOOK — "One type of AI needs a teacher. The other learns completely alone. Which one is more powerful?"
+[Scene 2 | 3–13s] SUPERVISED: Show a student with a teacher. Labeled dataset → model → predictions. Examples: spam detection, image classification.
+[Scene 3 | 13–23s] UNSUPERVISED: Remove the teacher. Show unlabeled data cloud → model finds hidden structure → clusters emerge.
+[Scene 4 | 23–33s] Visual contrast: two parallel tracks. Track 1: labeled arrows pointing to outputs. Track 2: data grouping on its own.
+[Scene 5 | 33–42s] SEMI-SUPERVISED reveal: "What if you have a LITTLE labeled data and TONS of unlabeled data?" — show 10 labeled + 1000 unlabeled points, model uses both.
+[Scene 6 | 42–50s] Real examples: supervised=email spam filter; unsupervised=customer segmentation; semi-supervised=Google Photos face grouping.
+[Scene 7 | 50–57s] WOW MOMENT — "Unsupervised AI literally discovers patterns humans never told it to look for. That's extraordinary."
+[Scene 8 | 57–60s] Outro: Applie AI Lab subscribe CTA.
 
-Script tone: storytelling, energetic, beginner-friendly. No heavy math. Include wow moment. Use SCENE_DATA env var JSON pattern. class RenderScene(Scene).
-
----
-
-# 🎬 PART 1 — NARRATION SCRIPT (TIMESTAMPED SCENES)
-
-Create a **high-retention YouTube Shorts narration script**.
-
-### Format Requirements
-
-Each scene MUST follow this exact format:
-
-[Scene 1 | 0–4s]  
-Narration text...
-
-[Scene 2 | 4–8s]  
-Narration text...
-
-[Scene 3 | 8–14s]  
-Narration text...
+Storytelling, beginner-friendly. No heavy math. SCENE_DATA pattern. class RenderScene(Scene).
 
 ---
 
@@ -67,7 +48,7 @@ Narration text...
 • Each paragraph = **one animation scene**  
 • Use **clear timestamps** so audio can sync perfectly  
 • Scenes should typically be **3–8 seconds** long  
-• Total runtime should be **20–40 seconds (ideal for Shorts)**  
+• Total runtime should be **30–90 seconds (ideal for Shorts)**  
 • Scenes should prioritize clarity over speed. If needed, extend visual display time even if the animation movement is short.
 
 ---
@@ -389,5 +370,53 @@ Importantt to add at the end of the video:
 my channel name is Applie AI lab so mention at the end
 
 "Thanks for watching! If you found this helpful, like this video and subscribe to Applie AI Lab for more AI concepts explained simply!"
+
+```python
+ # ─────────────────────────────────────────────
+    # Scene 8 — OUTRO (52–60s)
+    # ─────────────────────────────────────────────
+    def scene_8(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        thanks = Text("Thanks for watching!", font_size=40, color=WHITE, weight=BOLD)
+        thanks.shift(UP * 3.0)
+
+        # Channel name with glowing box
+        ch_bg = RoundedRectangle(
+            corner_radius=0.4, width=4.0, height=1.1,
+            fill_color="#1a2a4a", fill_opacity=0.9,
+            stroke_color=BLUE_B, stroke_width=2.5
+        )
+        ch_bg.shift(UP * 1.5)
+
+        channel = Text("Applie AI Lab", font_size=44, color=YELLOW, weight=BOLD)
+        channel.move_to(ch_bg.get_center())
+
+        sub_text = Text("Like & Subscribe", font_size=34, color=GREEN, weight=BOLD)
+        sub_text.shift(DOWN * 0.2)
+
+        desc = Text("for AI concepts explained simply!", font_size=22, color=WHITE)
+        desc.next_to(sub_text, DOWN, buff=0.32)
+
+        cta_row = VGroup(
+            Text("LIKE", font_size=26, color=BLUE_B, weight=BOLD),
+            Text("SUBSCRIBE", font_size=26, color=RED_B, weight=BOLD),
+            Text("NOTIFY", font_size=26, color=YELLOW, weight=BOLD),
+        ).arrange(RIGHT, buff=0.45)
+        cta_row.shift(DOWN * 2.0)
+
+        self.play(FadeIn(thanks, shift=DOWN * 0.2), run_time=0.55)
+        self.play(Create(ch_bg), run_time=0.45)
+        self.play(Write(channel), run_time=0.8)
+        self.play(FadeIn(sub_text), run_time=0.45)
+        self.play(FadeIn(desc), run_time=0.4)
+        self.play(
+            LaggedStart(*[FadeIn(c) for c in cta_row], lag_ratio=0.3),
+            run_time=0.7
+        )
+        self.play(Indicate(channel, scale_factor=1.06, color=YELLOW), run_time=0.7)
+        self.wait(max(0.1, duration - 4.1))
+this is manim code for my outro always use this so it is same in each short
+```
 
 At the very end verify the code once to see if it is correct if any scene is wrong or not working fix it and return the final code.

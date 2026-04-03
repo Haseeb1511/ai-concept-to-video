@@ -1,5 +1,8 @@
 import os
 from pathlib import Path
+from src.tts.elevenlabs_provider import generate_elevenlabs_tts
+from src.agent.model_loader import ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID
+from pydub import AudioSegment
 
 def _synthesise_tts(text: str, out_path: Path, provider: str) -> None:
     """Entry point for all TTS synthesis."""
@@ -12,9 +15,6 @@ def _synthesise_tts(text: str, out_path: Path, provider: str) -> None:
         mp3_path.unlink(missing_ok=True)
 
     elif provider == "elevenlabs":
-        from src.tts.elevenlabs_provider import generate_elevenlabs_tts
-        from src.agent.model_loader import ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID
-        from pydub import AudioSegment
         generate_elevenlabs_tts(text, out_path, ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID)
         mp3_path = out_path.with_suffix(".mp3")
         if mp3_path.exists():
