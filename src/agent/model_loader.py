@@ -42,6 +42,9 @@ TTS_PROVIDER = "elevenlabs"
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID", "3DR8c2yd30eztg65o4jV")
 
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
+GOOGLE_VOICE_ID = os.getenv("GOOGLE_VOICE_ID", "Charon")
+
 MANIM_QUALITY = "high_quality"
 MANIM_PREVIEW = False
 

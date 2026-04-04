@@ -1,0 +1,23 @@
+[Scene 1 | 0–3s]
+"This ONE algorithm is behind EVERY AI breakthrough of the last decade. It's almost insanely simple."
+
+[Scene 2 | 3–13s]
+"Imagine a blindfolded hiker standing on a hilly landscape. Their goal: reach the lowest valley. They can't see anything. They can only feel the slope beneath their feet — and take a step downhill."
+
+[Scene 3 | 13–22s]
+"In AI, that landscape is called the loss curve. Your position on it? Your model's current weights. The valley at the bottom is where loss is minimized — your best possible model."
+
+[Scene 4 | 22–32s]
+"Gradient descent calculates the slope at your current position — the gradient — then takes a step downhill. Repeat that over and over and you slide all the way to the minimum."
+
+[Scene 5 | 32–42s]
+"But the step size matters. Big steps are fast — but they overshoot. Small steps are slower — but precise. That step size is called the learning rate. Getting it right is an art."
+
+[Scene 6 | 42–50s]
+"Here's the trap: what if your hiker lands in a small valley and thinks they're done? But the real lowest point is somewhere else entirely. This is the local minimum problem — a real challenge in AI."
+
+[Scene 7 | 50–57s]
+"Mind-blowing fact: In a real neural network, gradient descent navigates a loss landscape with BILLIONS of dimensions simultaneously. And it still works. Every time."
+
+[Scene 8 | 57–60s]
+"Thanks for watching! If you found this helpful, like this video and subscribe to Applie AI Lab for more AI concepts explained simply!"

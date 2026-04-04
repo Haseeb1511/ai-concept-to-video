@@ -471,7 +471,7 @@ with st.container():
     with col1:
         tts_custom = st.selectbox(
             "TTS Provider:",
-            options=["openai", "elevenlabs", "gtts", "coqui"],
+            options=["openai", "elevenlabs", "google", "gtts", "coqui"],
             index=0,
             key="custom_tts"
         )

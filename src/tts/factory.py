@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from src.tts.elevenlabs_provider import generate_elevenlabs_tts
-from src.agent.model_loader import ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID
+from src.agent.model_loader import ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, GOOGLE_API_KEY, GOOGLE_VOICE_ID
 from pydub import AudioSegment
 
 def _synthesise_tts(text: str, out_path: Path, provider: str) -> None:
@@ -34,6 +34,10 @@ def _synthesise_tts(text: str, out_path: Path, provider: str) -> None:
     elif provider == "coqui":
         from src.tts.coqui_provider import generate_coqui_tts
         generate_coqui_tts(text, out_path)
+
+    elif provider == "google":
+        from src.tts.google_provider import generate_google_tts
+        generate_google_tts(text, out_path, GOOGLE_API_KEY, GOOGLE_VOICE_ID)
 
     else:
         # Default fallback to gTTS

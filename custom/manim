@@ -1,0 +1,530 @@
+class RenderScene(Scene):
+    def construct(self):
+        data = json.loads(os.environ["SCENE_DATA"])
+        text = data["text"]
+        duration = data["duration"]
+        scene_id = data["scene_id"]
+
+        if scene_id == 1:
+            self.scene_1(duration)
+        elif scene_id == 2:
+            self.scene_2(duration)
+        elif scene_id == 3:
+            self.scene_3(duration)
+        elif scene_id == 4:
+            self.scene_4(duration)
+        elif scene_id == 5:
+            self.scene_5(duration)
+        elif scene_id == 6:
+            self.scene_6(duration)
+        elif scene_id == 7:
+            self.scene_7(duration)
+        elif scene_id == 8:
+            self.scene_8(duration)
+
+    # ─────────────────────────────────────────────
+    # Scene 1 — HOOK (0–3s)
+    # ─────────────────────────────────────────────
+    def scene_1(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        line1 = Text("This ONE algorithm", font_size=70, color=YELLOW, weight=BOLD)
+        line2 = Text("is behind EVERY", font_size=70, color=WHITE, weight=BOLD)
+        line3 = Text("AI breakthrough", font_size=68, color=BLUE_B, weight=BOLD)
+        line4 = Text("of the last decade.", font_size=58, color=GREY)
+
+        group = VGroup(line1, line2, line3, line4).arrange(DOWN, buff=0.32)
+        group.scale_to_fit_width(4.2)
+        group.move_to(ORIGIN).shift(UP * 0.4)
+
+        reveal_time = min(2.2, duration * 0.72)
+        self.play(
+            LaggedStart(
+                FadeIn(line1, shift=UP * 0.25),
+                FadeIn(line2, shift=UP * 0.25),
+                FadeIn(line3, shift=UP * 0.25),
+                FadeIn(line4, shift=UP * 0.25),
+                lag_ratio=0.28,
+            ),
+            run_time=reveal_time,
+        )
+        self.wait(max(0.1, duration - reveal_time))
+
+    # ─────────────────────────────────────────────
+    # Scene 2 — HIKER ANALOGY (3–13s)
+    # ─────────────────────────────────────────────
+    def scene_2(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        title = Text("Imagine a Blindfolded Hiker", font_size=54, color=YELLOW, weight=BOLD)
+        title.to_edge(UP, buff=0.55)
+        title.scale_to_fit_width(4.2)
+
+        # Axes used only for coordinate conversion — never rendered directly
+        ax = Axes(
+            x_range=[-3, 3, 1],
+            y_range=[0, 3.5, 1],
+            x_length=4.5,
+            y_length=3.2,
+        )
+        ax.shift(DOWN * 1.2)
+
+        def hills(x):
+            return 0.5 * np.sin(x) + 0.35 * np.cos(2.2 * x) + 1.7
+
+        landscape = ax.plot(hills, x_range=[-3, 3], color=GREEN_C, stroke_width=3)
+        fill = ax.get_area(landscape, x_range=[-3, 3], color=GREEN_E, opacity=0.8)
+
+        # Simple hiker: circle head + blindfold stripe
+        hiker_base = ax.c2p(1.8, hills(1.8))
+        head = Circle(
+            radius=0.27,
+            fill_color="#ffcc99",
+            fill_opacity=1,
+            stroke_color=WHITE,
+            stroke_width=2.5,
+        )
+        blindfold = Rectangle(
+            width=0.58,
+            height=0.12,
+            fill_color="#3a1a00",
+            fill_opacity=1,
+            stroke_width=0,
+        )
+        blindfold.move_to(head.get_center())
+        hiker = VGroup(head, blindfold)
+        hiker.move_to(hiker_base + UP * 0.44)
+
+        # Slope arrow — shows downhill direction
+        arr_s = ax.c2p(2.2, hills(2.2)) + UP * 0.15
+        arr_e = ax.c2p(0.8, hills(0.8)) + UP * 0.15
+        slope_arr = Arrow(arr_s, arr_e, color=RED_B, stroke_width=3, buff=0)
+        slope_lbl = Text("Feel the slope", font_size=38, color=RED_B, weight=BOLD)
+        slope_lbl.next_to(slope_arr, UP, buff=0.22)
+        slope_lbl.scale_to_fit_width(2.8)
+
+        # Valley / goal marker
+        valley_x = -1.2
+        goal_dot = Dot(ax.c2p(valley_x, hills(valley_x)), radius=0.22, color=GOLD)
+        goal_lbl = Text("Goal: Lowest Valley", font_size=36, color=GOLD, weight=BOLD)
+        goal_lbl.to_edge(DOWN, buff=0.45)
+        goal_lbl.scale_to_fit_width(4.0)
+
+        # Animations
+        self.play(FadeIn(title), run_time=0.6)
+        self.play(Create(landscape), FadeIn(fill), run_time=1.2)
+        self.play(FadeIn(hiker), run_time=0.55)
+        self.play(GrowArrow(slope_arr), FadeIn(slope_lbl), run_time=0.9)
+        self.play(FadeIn(goal_dot), FadeIn(goal_lbl), run_time=0.7)
+
+        # Hiker walks toward the valley
+        step_xs = [1.0, 0.2, -0.5, valley_x]
+        for sx in step_xs:
+            new_pos = ax.c2p(sx, hills(sx)) + UP * 0.44
+            self.play(hiker.animate.move_to(new_pos), run_time=0.75)
+
+        used = 0.6 + 1.2 + 0.55 + 0.9 + 0.7 + len(step_xs) * 0.75
+        self.wait(max(0.1, duration - used))
+
+    # ─────────────────────────────────────────────
+    # Scene 3 — LOSS CURVE (13–22s)
+    # ─────────────────────────────────────────────
+    def scene_3(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        title = Text("In AI: This is the Loss Curve", font_size=54, color=YELLOW, weight=BOLD)
+        title.to_edge(UP, buff=0.55)
+        title.scale_to_fit_width(4.2)
+
+        ax = Axes(
+            x_range=[-3, 3, 1],
+            y_range=[0, 4, 1],
+            x_length=4.5,
+            y_length=3.2,
+            axis_config={"include_tip": True, "color": GREY, "stroke_width": 2},
+        )
+        ax.shift(DOWN * 1.4)
+
+        x_lbl = Text("Model Weights", font_size=38, color=GREY)
+        x_lbl.next_to(ax.x_axis, DOWN, buff=0.32)
+        x_lbl.scale_to_fit_width(3.0)
+
+        y_lbl = Text("Loss", font_size=38, color=GREY)
+        y_lbl.next_to(ax.y_axis, LEFT, buff=0.32)
+
+        def loss_fn(x):
+            return 0.38 * x ** 2 + 0.15
+
+        curve = ax.plot(loss_fn, x_range=[-3, 3], color=BLUE_B, stroke_width=3)
+        area = ax.get_area(curve, x_range=[-3, 3], color=BLUE_E, opacity=0.4)
+
+        # Current position
+        cx = 2.4
+        cur_dot = Dot(ax.c2p(cx, loss_fn(cx)), radius=0.17, color=RED_B)
+        cur_lbl = Text("Current\nWeights", font_size=34, color=RED_B)
+        cur_lbl.next_to(cur_dot, UP, buff=0.22)
+        cur_lbl.scale_to_fit_width(1.8)
+
+        # Minimum
+        min_dot = Dot(ax.c2p(0, loss_fn(0)), radius=0.17, color=GOLD)
+        min_lbl = Text("Best Model!", font_size=38, color=GOLD, weight=BOLD)
+        min_lbl.next_to(min_dot, UP, buff=0.25)
+        min_lbl.scale_to_fit_width(2.2)
+
+        # Curved arrow guiding eye from current → min
+        goal_arrow = CurvedArrow(
+            cur_dot.get_center(),
+            min_dot.get_center() + RIGHT * 0.12,
+            angle=-PI / 3.5,
+            color=GREEN_B,
+            stroke_width=2.5,
+        )
+
+        self.play(FadeIn(title), run_time=0.6)
+        self.play(Create(ax), FadeIn(x_lbl), FadeIn(y_lbl), run_time=1.0)
+        self.play(Create(curve), FadeIn(area), run_time=1.2)
+        self.play(FadeIn(cur_dot), FadeIn(cur_lbl), run_time=0.8)
+        self.play(FadeIn(min_dot), FadeIn(min_lbl), run_time=0.8)
+        self.play(Create(goal_arrow), run_time=0.8)
+
+        used = 0.6 + 1.0 + 1.2 + 0.8 + 0.8 + 0.8
+        self.wait(max(0.1, duration - used))
+
+    # ─────────────────────────────────────────────
+    # Scene 4 — GRADIENT STEP (22–32s)
+    # ─────────────────────────────────────────────
+    def scene_4(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        title = Text("Calculate Slope, Step Down", font_size=56, color=YELLOW, weight=BOLD)
+        title.to_edge(UP, buff=0.55)
+        title.scale_to_fit_width(4.2)
+
+        ax = Axes(
+            x_range=[-3, 3, 1],
+            y_range=[0, 4, 1],
+            x_length=4.5,
+            y_length=3.0,
+            axis_config={"include_tip": True, "color": GREY, "stroke_width": 2},
+        )
+        ax.shift(DOWN * 1.4)
+
+        def loss_fn(x):
+            return 0.38 * x ** 2 + 0.15
+
+        curve = ax.plot(loss_fn, color=BLUE_B, stroke_width=3)
+
+        start_x = 2.5
+        dot = Dot(ax.c2p(start_x, loss_fn(start_x)), radius=0.17, color=RED_B)
+
+        # Tangent line — gradient = 2 * 0.38 * x = 0.76 * x
+        g_val = 0.76 * start_x
+        dx = 0.50
+        tangent = Line(
+            ax.c2p(start_x - dx, loss_fn(start_x) - g_val * dx),
+            ax.c2p(start_x + dx, loss_fn(start_x) + g_val * dx),
+            color=ORANGE,
+            stroke_width=3,
+        )
+        grad_lbl = Text("Gradient (slope)", font_size=38, color=ORANGE, weight=BOLD)
+        grad_lbl.next_to(tangent, UP, buff=0.25)
+        grad_lbl.scale_to_fit_width(2.8)
+
+        # Step arrow pointing downhill (toward minimum at x=0)
+        step_x2 = start_x - 1.1
+        step_arr = Arrow(
+            ax.c2p(start_x, loss_fn(start_x)),
+            ax.c2p(step_x2, loss_fn(step_x2)),
+            color=GREEN_B,
+            stroke_width=3,
+            buff=0,
+        )
+        step_lbl = Text("Step downhill!", font_size=40, color=GREEN_B, weight=BOLD)
+        step_lbl.next_to(step_arr, DOWN, buff=0.22)
+        step_lbl.scale_to_fit_width(2.5)
+
+        self.play(FadeIn(title), run_time=0.6)
+        self.play(Create(ax), Create(curve), run_time=0.9)
+        self.play(FadeIn(dot), run_time=0.4)
+        self.play(Create(tangent), FadeIn(grad_lbl), run_time=0.9)
+        self.play(GrowArrow(step_arr), FadeIn(step_lbl), run_time=0.9)
+        self.wait(0.5)
+
+        self.play(
+            FadeOut(tangent),
+            FadeOut(grad_lbl),
+            FadeOut(step_arr),
+            FadeOut(step_lbl),
+            run_time=0.4,
+        )
+
+        # Slide dot along the curve to the minimum
+        slide_xs = [1.8, 1.1, 0.5, 0.0]
+        for x in slide_xs:
+            self.play(dot.animate.move_to(ax.c2p(x, loss_fn(x))), run_time=0.65)
+
+        done_lbl = Text("Minimum Found!", font_size=46, color=GOLD, weight=BOLD)
+        done_lbl.next_to(dot, UP, buff=0.3)
+        done_lbl.scale_to_fit_width(3.0)
+        self.play(FadeIn(done_lbl), Indicate(dot, color=GOLD, scale_factor=1.5), run_time=0.7)
+
+        used = 0.6 + 0.9 + 0.4 + 0.9 + 0.9 + 0.5 + 0.4 + len(slide_xs) * 0.65 + 0.7
+        self.wait(max(0.1, duration - used))
+
+    # ─────────────────────────────────────────────
+    # Scene 5 — LEARNING RATE (32–42s)
+    # ─────────────────────────────────────────────
+    def scene_5(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        def loss_fn(x):
+            return 0.38 * x ** 2 + 0.15
+
+        half = duration * 0.47  # time budget for big-LR phase
+
+        # ── Phase 1: Big Learning Rate (overshoot) ──
+        big_title = Text("BIG Learning Rate", font_size=62, color=RED_B, weight=BOLD)
+        big_title.to_edge(UP, buff=0.5)
+        big_title.scale_to_fit_width(4.2)
+
+        sub_big = Text("Fast but overshoots!", font_size=42, color=RED_A)
+        sub_big.next_to(big_title, DOWN, buff=0.28)
+        sub_big.scale_to_fit_width(3.5)
+
+        ax1 = Axes(
+            x_range=[-3, 3, 1],
+            y_range=[0, 4, 1],
+            x_length=4.2,
+            y_length=2.8,
+            axis_config={"include_tip": False, "color": GREY, "stroke_width": 1.5},
+        )
+        ax1.shift(DOWN * 0.85)
+        curve1 = ax1.plot(loss_fn, color=BLUE_B, stroke_width=2.5)
+
+        big_xs = [2.5, -2.1, 1.6, -1.0]
+        big_dots = [
+            Dot(ax1.c2p(x, loss_fn(x)), radius=0.14, color=RED_B) for x in big_xs
+        ]
+        big_segs = [
+            DashedLine(
+                ax1.c2p(big_xs[i], loss_fn(big_xs[i])),
+                ax1.c2p(big_xs[i + 1], loss_fn(big_xs[i + 1])),
+                color=RED_A,
+                dash_length=0.14,
+                stroke_width=2.0,
+            )
+            for i in range(len(big_xs) - 1)
+        ]
+        overshoot_lbl = Text("Overshoot!", font_size=44, color=RED_B, weight=BOLD)
+        overshoot_lbl.to_edge(DOWN, buff=0.4)
+        overshoot_lbl.scale_to_fit_width(3.0)
+
+        p1_used = 0.55 + 0.85 + 0.3 + (len(big_xs) - 1) * 0.5 + 0.45
+
+        self.play(FadeIn(big_title), FadeIn(sub_big), run_time=0.55)
+        self.play(Create(ax1), Create(curve1), run_time=0.85)
+        self.play(FadeIn(big_dots[0]), run_time=0.3)
+        for i in range(len(big_xs) - 1):
+            self.play(Create(big_segs[i]), FadeIn(big_dots[i + 1]), run_time=0.5)
+        self.play(FadeIn(overshoot_lbl), run_time=0.45)
+        self.wait(max(0.1, half - p1_used))
+
+        # Clear phase 1
+        all_p1 = (
+            [big_title, sub_big, ax1, curve1, overshoot_lbl]
+            + big_dots
+            + big_segs
+        )
+        self.play(*[FadeOut(m) for m in all_p1], run_time=0.4)
+
+        # ── Phase 2: Small Learning Rate (precise) ──
+        small_title = Text("SMALL Learning Rate", font_size=62, color=GREEN_B, weight=BOLD)
+        small_title.to_edge(UP, buff=0.5)
+        small_title.scale_to_fit_width(4.2)
+
+        sub_small = Text("Slow but precise!", font_size=42, color=GREEN_A)
+        sub_small.next_to(small_title, DOWN, buff=0.28)
+        sub_small.scale_to_fit_width(3.0)
+
+        ax2 = Axes(
+            x_range=[-3, 3, 1],
+            y_range=[0, 4, 1],
+            x_length=4.2,
+            y_length=2.8,
+            axis_config={"include_tip": False, "color": GREY, "stroke_width": 1.5},
+        )
+        ax2.shift(DOWN * 0.85)
+        curve2 = ax2.plot(loss_fn, color=BLUE_B, stroke_width=2.5)
+
+        small_xs = [2.5, 2.0, 1.5, 1.0, 0.5, 0.0]
+        small_dots = [
+            Dot(ax2.c2p(x, loss_fn(x)), radius=0.14, color=GREEN_B) for x in small_xs
+        ]
+        precise_lbl = Text("Precise!", font_size=46, color=GREEN_B, weight=BOLD)
+        precise_lbl.to_edge(DOWN, buff=0.4)
+        precise_lbl.scale_to_fit_width(2.5)
+
+        p2_used = 0.55 + 0.85 + 0.3 + (len(small_xs) - 1) * 0.38 + 0.45
+
+        self.play(FadeIn(small_title), FadeIn(sub_small), run_time=0.55)
+        self.play(Create(ax2), Create(curve2), run_time=0.85)
+        self.play(FadeIn(small_dots[0]), run_time=0.3)
+        for i in range(1, len(small_xs)):
+            self.play(FadeIn(small_dots[i]), run_time=0.38)
+        self.play(FadeIn(precise_lbl), run_time=0.45)
+        self.wait(max(0.1, duration - half - 0.4 - p2_used))
+
+    # ─────────────────────────────────────────────
+    # Scene 6 — LOCAL MINIMUM TRAP (42–50s)
+    # ─────────────────────────────────────────────
+    def scene_6(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        title = Text("The Local Minimum Trap", font_size=58, color=RED_B, weight=BOLD)
+        title.to_edge(UP, buff=0.55)
+        title.scale_to_fit_width(4.2)
+
+        ax = Axes(
+            x_range=[-3.2, 3.2, 1],
+            y_range=[0, 4.5, 1],
+            x_length=4.5,
+            y_length=3.0,
+            axis_config={"include_tip": False, "color": GREY, "stroke_width": 1.5},
+        )
+        ax.shift(DOWN * 1.4)
+
+        def multi_valley(x):
+            return 0.15 * x ** 4 - 0.8 * x ** 2 + 0.2 * x + 2.5
+
+        curve = ax.plot(multi_valley, x_range=[-3.0, 3.0], color=BLUE_B, stroke_width=3)
+        area = ax.get_area(curve, x_range=[-3.0, 3.0], color=BLUE_E, opacity=0.4)
+
+        start_x = 2.8
+        hiker_dot = Dot(
+            ax.c2p(start_x, multi_valley(start_x)), radius=0.18, color=WHITE
+        )
+
+        # Local minimum ≈ x=1.7
+        local_x = 1.7
+        local_dot = Dot(
+            ax.c2p(local_x, multi_valley(local_x)), radius=0.14, color=RED_B
+        )
+        local_lbl = Text("Local Min\n(TRAP!)", font_size=32, color=RED_B, weight=BOLD)
+        local_lbl.next_to(local_dot, RIGHT, buff=0.18)
+        local_lbl.scale_to_fit_width(1.72)
+
+        # Global minimum ≈ x=-1.55
+        global_x = -1.55
+        global_dot = Dot(
+            ax.c2p(global_x, multi_valley(global_x)), radius=0.14, color=GOLD
+        )
+        global_lbl = Text("Global Min\n(GOAL!)", font_size=32, color=GOLD, weight=BOLD)
+        global_lbl.next_to(global_dot, LEFT, buff=0.18)
+        global_lbl.scale_to_fit_width(1.72)
+
+        stuck_text = Text("Real problem in AI!", font_size=44, color=RED_B, weight=BOLD)
+        stuck_text.to_edge(DOWN, buff=0.4)
+        stuck_text.scale_to_fit_width(4.0)
+
+        self.play(FadeIn(title), run_time=0.6)
+        self.play(Create(curve), FadeIn(area), run_time=1.2)
+        self.play(FadeIn(hiker_dot), run_time=0.45)
+
+        # Hiker slides toward and stops at local minimum
+        path = [2.3, 1.95, local_x]
+        for px in path:
+            self.play(
+                hiker_dot.animate.move_to(ax.c2p(px, multi_valley(px))),
+                run_time=0.55,
+            )
+
+        self.play(FadeIn(local_dot), FadeIn(local_lbl), run_time=0.65)
+        self.play(Indicate(hiker_dot, color=RED_B, scale_factor=1.7), run_time=0.8)
+        self.play(FadeIn(global_dot), FadeIn(global_lbl), run_time=0.65)
+        self.play(FadeIn(stuck_text), run_time=0.55)
+
+        used = 0.6 + 1.2 + 0.45 + len(path) * 0.55 + 0.65 + 0.8 + 0.65 + 0.55
+        self.wait(max(0.1, duration - used))
+
+    # ─────────────────────────────────────────────
+    # Scene 7 — WOW MOMENT (50–57s)
+    # ─────────────────────────────────────────────
+    def scene_7(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        wow_lbl = Text("Mind-Blowing Fact", font_size=60, color=YELLOW, weight=BOLD)
+        wow_lbl.to_edge(UP, buff=0.55)
+        wow_lbl.scale_to_fit_width(4.2)
+
+        line1 = Text("Real neural networks use", font_size=46, color=WHITE)
+        line2 = Text("gradient descent across", font_size=46, color=WHITE)
+
+        billions = Text("BILLIONS", font_size=100, color=RED_B, weight=BOLD)
+        billions.scale_to_fit_width(4.0)
+
+        line3 = Text("of dimensions at once.", font_size=46, color=WHITE)
+
+        body = VGroup(line1, line2, billions, line3).arrange(DOWN, buff=0.3)
+        body.scale_to_fit_width(4.2)
+        body.move_to(ORIGIN).shift(DOWN * 0.2)
+
+        still_works = Text("And it STILL works!", font_size=58, color=GREEN_B, weight=BOLD)
+        still_works.scale_to_fit_width(4.0)
+        still_works.next_to(body, DOWN, buff=0.42)
+
+        self.play(FadeIn(wow_lbl), run_time=0.55)
+        self.play(FadeIn(line1), FadeIn(line2), run_time=0.9)
+        self.play(FadeIn(billions, scale=0.2), run_time=0.9)
+        self.play(FadeIn(line3), run_time=0.65)
+        self.play(Write(still_works), run_time=1.0)
+
+        used = 0.55 + 0.9 + 0.9 + 0.65 + 1.0
+        self.wait(max(0.1, duration - used))
+
+    # ─────────────────────────────────────────────
+    # Scene 8 — OUTRO (57–60s)
+    # ─────────────────────────────────────────────
+    def scene_8(self, duration):
+        self.camera.background_color = "#0a0a1e"
+
+        thanks = Text("Thanks for watching!", font_size=40, color=WHITE, weight=BOLD)
+        thanks.shift(UP * 3.0)
+
+        ch_bg = RoundedRectangle(
+            corner_radius=0.4,
+            width=4.0,
+            height=1.1,
+            fill_color="#1a2a4a",
+            fill_opacity=0.9,
+            stroke_color=BLUE_B,
+            stroke_width=2.5,
+        )
+        ch_bg.shift(UP * 1.5)
+
+        channel = Text("Applie AI Lab", font_size=44, color=YELLOW, weight=BOLD)
+        channel.move_to(ch_bg.get_center())
+
+        sub_text = Text("Like & Subscribe", font_size=34, color=GREEN, weight=BOLD)
+        sub_text.shift(DOWN * 0.2)
+
+        desc = Text("for AI concepts explained simply!", font_size=22, color=WHITE)
+        desc.next_to(sub_text, DOWN, buff=0.32)
+
+        cta_row = VGroup(
+            Text("LIKE", font_size=26, color=BLUE_B, weight=BOLD),
+            Text("SUBSCRIBE", font_size=26, color=RED_B, weight=BOLD),
+            Text("NOTIFY", font_size=26, color=YELLOW, weight=BOLD),
+        ).arrange(RIGHT, buff=0.45)
+        cta_row.shift(DOWN * 2.0)
+
+        self.play(FadeIn(thanks, shift=DOWN * 0.2), run_time=0.55)
+        self.play(Create(ch_bg), run_time=0.45)
+        self.play(Write(channel), run_time=0.8)
+        self.play(FadeIn(sub_text), run_time=0.45)
+        self.play(FadeIn(desc), run_time=0.4)
+        self.play(
+            LaggedStart(*[FadeIn(c) for c in cta_row], lag_ratio=0.3),
+            run_time=0.7,
+        )
+        self.play(Indicate(channel, scale_factor=1.06, color=YELLOW), run_time=0.7)
+        self.wait(max(0.1, duration - 4.1))

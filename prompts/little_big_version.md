@@ -25,23 +25,20 @@ Because of this pipeline, you must **STRICTLY follow all formatting and technica
 ---
 
 # 📥 INPUT TOPIC
-
-Input Topic for Manim YouTube Short: "Supervised vs Unsupervised Learning"
+Input Topic for Manim YouTube Short: "Bias-Variance Tradeoff"
 
 Generate a Manim YouTube Short script (8 scenes, 0–60s) and full Python Manim code.
 
-[Scene 1 | 0–3s] HOOK — "One type of AI needs a teacher. The other learns completely alone. Which one is more powerful?"
-[Scene 2 | 3–13s] SUPERVISED: Show a student with a teacher. Labeled dataset → model → predictions. Examples: spam detection, image classification.
-[Scene 3 | 13–23s] UNSUPERVISED: Remove the teacher. Show unlabeled data cloud → model finds hidden structure → clusters emerge.
-[Scene 4 | 23–33s] Visual contrast: two parallel tracks. Track 1: labeled arrows pointing to outputs. Track 2: data grouping on its own.
-[Scene 5 | 33–42s] SEMI-SUPERVISED reveal: "What if you have a LITTLE labeled data and TONS of unlabeled data?" — show 10 labeled + 1000 unlabeled points, model uses both.
-[Scene 6 | 42–50s] Real examples: supervised=email spam filter; unsupervised=customer segmentation; semi-supervised=Google Photos face grouping.
-[Scene 7 | 50–57s] WOW MOMENT — "Unsupervised AI literally discovers patterns humans never told it to look for. That's extraordinary."
+[Scene 1 | 0–3s] HOOK — "Every ML model makes exactly TWO types of mistakes. Understanding this changes how you think about AI."
+[Scene 2 | 3–13s] Dartboard analogy: arrows thrown at target. HIGH BIAS = all arrows hit same wrong spot (systematic error). Show clustered arrows far from center.
+[Scene 3 | 13–23s] HIGH VARIANCE = arrows scattered all over (inconsistent). Show arrows spread randomly. IDEAL = arrows clustered at center.
+[Scene 4 | 23–33s] Map to models: High Bias = underfitting (too simple, wrong assumptions). High Variance = overfitting (too complex, memorizing noise).
+[Scene 5 | 33–42s] Show bias-variance tradeoff curve: as model complexity increases, bias decreases but variance increases. Show the U-shaped total error curve with optimal sweet spot.
+[Scene 6 | 42–50s] Real-world examples: linear regression = high bias. Decision tree with no pruning = high variance. Random forest = reduces variance via averaging.
+[Scene 7 | 50–57s] WOW MOMENT — "You can't eliminate both at once with a fixed dataset. This is a fundamental law of statistics. Knowing this separates junior from senior engineers."
 [Scene 8 | 57–60s] Outro: Applie AI Lab subscribe CTA.
 
-Storytelling, beginner-friendly. No heavy math. SCENE_DATA pattern. class RenderScene(Scene).
-
----
+Storytelling analogy style, beginner-friendly. SCENE_DATA pattern. class RenderScene(Scene).
 
 ### Scene Rules
 
@@ -227,6 +224,14 @@ The viewer should **understand the idea visually even without sound.**
 
 ---
 
+# 📱 YOUTUBE SHORTS LAYOUT RULES
+(Add this to your existing rules)
+• **VERY IMPORTANT:** Make all shapes and text 30% larger than normal!
+• Base font sizes should be large: use `font_size=55-65` for normal text, and `font_size=80-90` for titles or hooks.
+• Increase the `radius`, `width`, and `height` of all geometrical objects slightly so they take up more of the screen.
+
+
+
 # 🚫 OBJECT OVERLAP RULES
 
 Animations MUST NOT have overlapping objects.
@@ -367,9 +372,9 @@ Avoid boring slides.
 Make it **visual, dynamic, and memorable.**
 
 Importantt to add at the end of the video:  
-my channel name is Applie AI lab so mention at the end
+my channel name is AI with Haseeb so mention at the end
 
-"Thanks for watching! If you found this helpful, like this video and subscribe to Applie AI Lab for more AI concepts explained simply!"
+"Thanks for watching! If you found this helpful, like this video and subscribe to AI with Haseeb for more AI concepts explained simply!"
 
 ```python
  # ─────────────────────────────────────────────
@@ -389,7 +394,7 @@ my channel name is Applie AI lab so mention at the end
         )
         ch_bg.shift(UP * 1.5)
 
-        channel = Text("Applie AI Lab", font_size=44, color=YELLOW, weight=BOLD)
+        channel = Text("AI with Haseeb", font_size=44, color=YELLOW, weight=BOLD)
         channel.move_to(ch_bg.get_center())
 
         sub_text = Text("Like & Subscribe", font_size=34, color=GREEN, weight=BOLD)
