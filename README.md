@@ -13,6 +13,21 @@ Self-Correction: If the stitch node fails, the graph can automatically route bac
 
 
 
+1. Scene-by-Scene Timeline Editor
+Shows each scene as a row: [Scene N] | 🎬 Animation preview | 🔊 Audio player | ⏱️ Speed slider
+Each scene has independent animation speed and audio speed controls
+Visual waveform-like progress bar for context
+2. Realtime Preview
+Play animation + audio in sync in the browser using HTML components
+No re-rendering needed for preview — just browser playbackRate
+3. Apply & Re-export
+When user is happy → click "Apply Adjustments"
+Backend runs FFmpeg with the speed factors per scene, re-stitches into final video
+This avoids re-running the expensive Manim render or TTS
+4. Smart Auto-Sync Button
+Automatically detects scenes where video length ≠ audio length and suggests adjustments
+"The animation is 30% faster than audio — auto-stretch?" type UX
+
 
 
 

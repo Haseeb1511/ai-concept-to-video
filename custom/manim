@@ -280,7 +280,7 @@ class RenderScene(Scene):
         def loss_fn(x):
             return 0.38 * x ** 2 + 0.15
 
-        half = duration * 0.47  # time budget for big-LR phase
+        half = duration * 0.47 - 1  # time budget for big-LR phase
 
         # ── Phase 1: Big Learning Rate (overshoot) ──
         big_title = Text("BIG Learning Rate", font_size=62, color=RED_B, weight=BOLD)
