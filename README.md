@@ -1,3 +1,24 @@
+3. Future-Proofing for Complexity
+While your current flow is linear, LangGraph makes it trivial to add conditional logic without making the code messy. For example, you could easily add:
+
+Parallelism: Generating TTS for scene 1 while simultaneously rendering scene 2.
+Self-Correction: If the stitch node fails, the graph can automatically route back to a "re-render" node or try a "MoviePy fallback" node based on the error type.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # AI Video Generator (LangGraph + Manim)
 
 A production-style Python pipeline that automatically generates short educational videos from a topic text.

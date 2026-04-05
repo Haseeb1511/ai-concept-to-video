@@ -25,20 +25,20 @@ Because of this pipeline, you must **STRICTLY follow all formatting and technica
 ---
 
 # 📥 INPUT TOPIC
-Input Topic for Manim YouTube Short: "Bias-Variance Tradeoff"
+Input Topic for Manim YouTube Short: "Train Validation Test Split"
 
 Generate a Manim YouTube Short script (8 scenes, 0–60s) and full Python Manim code.
 
-[Scene 1 | 0–3s] HOOK — "Every ML model makes exactly TWO types of mistakes. Understanding this changes how you think about AI."
-[Scene 2 | 3–13s] Dartboard analogy: arrows thrown at target. HIGH BIAS = all arrows hit same wrong spot (systematic error). Show clustered arrows far from center.
-[Scene 3 | 13–23s] HIGH VARIANCE = arrows scattered all over (inconsistent). Show arrows spread randomly. IDEAL = arrows clustered at center.
-[Scene 4 | 23–33s] Map to models: High Bias = underfitting (too simple, wrong assumptions). High Variance = overfitting (too complex, memorizing noise).
-[Scene 5 | 33–42s] Show bias-variance tradeoff curve: as model complexity increases, bias decreases but variance increases. Show the U-shaped total error curve with optimal sweet spot.
-[Scene 6 | 42–50s] Real-world examples: linear regression = high bias. Decision tree with no pruning = high variance. Random forest = reduces variance via averaging.
-[Scene 7 | 50–57s] WOW MOMENT — "You can't eliminate both at once with a fixed dataset. This is a fundamental law of statistics. Knowing this separates junior from senior engineers."
+[Scene 1 | 0–3s] HOOK — "Using only one dataset to train AND test your AI is like studying from the exam answer key. This is the right way."
+[Scene 2 | 3–13s] Show a big dataset → split into 3 blocks: Training (70%), Validation (15%), Test (15%). Animate the split with colored rectangles.
+[Scene 3 | 13–23s] TRAINING SET: the AI sees this. It learns from these examples. The model adjusts weights based on this.
+[Scene 4 | 23–33s] VALIDATION SET: the AI never trains on this. We use it to tune hyperparameters and catch overfitting during development.
+[Scene 5 | 33–43s] TEST SET: used ONCE at the very end. This is the final exam. If you test too often, you leak information and the result is optimistic.
+[Scene 6 | 43–51s] Show the data leakage mistake: using test set during development = your model secretly memorized test patterns. Real-world accuracy will be much worse.
+[Scene 7 | 51–57s] WOW MOMENT — "Many published AI papers have been exposed for test-set leakage. This split is not just good practice — it's scientific integrity."
 [Scene 8 | 57–60s] Outro: Applie AI Lab subscribe CTA.
 
-Storytelling analogy style, beginner-friendly. SCENE_DATA pattern. class RenderScene(Scene).
+Storytelling, beginner-friendly, practical. SCENE_DATA pattern. class RenderScene(Scene).
 
 ### Scene Rules
 

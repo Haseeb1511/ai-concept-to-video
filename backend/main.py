@@ -8,10 +8,14 @@ import asyncio
 from typing import Optional, List
 from contextlib import asynccontextmanager
 import json
+import uuid
 
 from src.pipeline import run_custom_pipeline
+from src.pipeline.runner import _pipeline_graph
 from src.agent.seo_generator import generate_seo_metadata
 from src.mcp.client import init_mcp_client, close_mcp_client
+from src.chatbot.graph.chat_graph import chat_graph
+from langchain_core.messages import HumanMessage
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,8 +25,17 @@ async def lifespan(app: FastAPI):
     # Initialize MCP tools
     print("[setup] Initializing MCP tools...")
     await init_mcp_client()
-    
-    print("[setup] Backend ready for Custom Video generation")
+
+    # Save graph visualization as PNG in project root
+    try:
+        graph_png = _pipeline_graph.get_graph().draw_mermaid_png()
+        with open("graph.png", "wb") as f:
+            f.write(graph_png)
+        print("Graph image saved to graph.png")
+    except Exception as e:
+        print(f"Could not save graph image: {e}")
+
+    print("Graph + Checkpointer ready")
     yield
     
     # Global Cleanup
@@ -87,6 +100,56 @@ async def generate_seo_endpoint(request: SEORequest):
         return metadata
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─── Chat Endpoint ────────────────────────────────────────────────────────────
+
+class ChatRequest(BaseModel):
+    message: str
+    thread_id: Optional[str] = None   # Pass None to start a new conversation
+
+
+@app.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    """
+    Stream a chatbot response using the LangGraph YouTube channel chatbot.
+    Returns NDJSON with:
+      {"token": "..."} — streamed tokens
+      {"tool_call": "tool_name"} — when a tool is invoked
+      {"done": true, "thread_id": "..."} — final signal
+      {"error": "..."} — on failure
+    """
+    thread_id = request.thread_id or str(uuid.uuid4())
+    config = {"configurable": {"thread_id": thread_id}}
+
+    async def stream_chat():
+        try:
+            input_state = {"messages": [HumanMessage(content=request.message)]}
+            async for event in chat_graph.astream_events(
+                input_state, config=config, version="v2"
+            ):
+                kind = event.get("event", "")
+                name = event.get("name", "")
+
+                # Stream LLM tokens
+                if kind == "on_chat_model_stream":
+                    chunk = event["data"].get("chunk")
+                    if chunk and hasattr(chunk, "content") and chunk.content:
+                        yield json.dumps({"token": chunk.content}) + "\n"
+
+                # Notify when a tool is called
+                elif kind == "on_tool_start":
+                    tool_name = event.get("name", "unknown_tool")
+                    yield json.dumps({"tool_call": tool_name}) + "\n"
+
+            yield json.dumps({"done": True, "thread_id": thread_id}) + "\n"
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            yield json.dumps({"error": str(e)}) + "\n"
+
+    return StreamingResponse(stream_chat(), media_type="application/x-ndjson")
 
 
 @app.get("/health")
