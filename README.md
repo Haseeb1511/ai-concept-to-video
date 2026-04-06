@@ -1,9 +1,28 @@
+# Imporvemnt
+```text
 3. Future-Proofing for Complexity
 While your current flow is linear, LangGraph makes it trivial to add conditional logic without making the code messy. For example, you could easily add:
 
 Parallelism: Generating TTS for scene 1 while simultaneously rendering scene 2.
 Self-Correction: If the stitch node fails, the graph can automatically route back to a "re-render" node or try a "MoviePy fallback" node based on the error type.
 
+LangGraph Checkpointers: Use LangGraph's persistent state savers (like SQLite or Postgres). If a run crashes, it easily resumes from the exact node where it failed rather than starting from Scene 1.(i will only use this locally so add enough for locally not produciton )
+ SqliteSaver with thread_id.
+
+docker file using docker compose
+
+
+
+
+3. Reliability: Multi-Tier "Self-Healing" Stitching
+Your current stitch node has a basic MoviePy fallback.
+
+The Improvement: Add a Sync-Validation Node.
+How: After stitching, a node should use ffprobe to verify that the final video duration matches the sum of the audio durations. If there is a "drift" (common in Manim), the node can trigger a conditional edge back to a "Speed-Adjustment" node that re-stretches the video to match the audio precisely.
+Benefit: Eliminates those annoying videos where audio and visuals drift apart by the ending.
+
+
+```
 
 
 

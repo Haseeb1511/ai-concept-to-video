@@ -25,20 +25,20 @@ Because of this pipeline, you must **STRICTLY follow all formatting and technica
 ---
 
 # 📥 INPUT TOPIC
-Input Topic for Manim YouTube Short: "Train Validation Test Split"
+Input Topic for Manim YouTube Short: "Autoencoders Explained"
 
 Generate a Manim YouTube Short script (8 scenes, 0–60s) and full Python Manim code.
 
-[Scene 1 | 0–3s] HOOK — "Using only one dataset to train AND test your AI is like studying from the exam answer key. This is the right way."
-[Scene 2 | 3–13s] Show a big dataset → split into 3 blocks: Training (70%), Validation (15%), Test (15%). Animate the split with colored rectangles.
-[Scene 3 | 13–23s] TRAINING SET: the AI sees this. It learns from these examples. The model adjusts weights based on this.
-[Scene 4 | 23–33s] VALIDATION SET: the AI never trains on this. We use it to tune hyperparameters and catch overfitting during development.
-[Scene 5 | 33–43s] TEST SET: used ONCE at the very end. This is the final exam. If you test too often, you leak information and the result is optimistic.
-[Scene 6 | 43–51s] Show the data leakage mistake: using test set during development = your model secretly memorized test patterns. Real-world accuracy will be much worse.
-[Scene 7 | 51–57s] WOW MOMENT — "Many published AI papers have been exposed for test-set leakage. This split is not just good practice — it's scientific integrity."
+[Scene 1 | 0–3s] HOOK — "What if you could compress an image to 32 numbers and rebuild it perfectly? Autoencoders do exactly this. Crazy."
+[Scene 2 | 3–13s] Show an input image (face) → ENCODER network → compress to a small vector of 32 numbers (the bottleneck / latent vector).
+[Scene 3 | 13–23s] DECODER network: take those 32 numbers → expand back to the full image. The output should match the input.
+[Scene 4 | 23–33s] Training: minimize the difference between input and reconstruction. No labels needed — the image is its own label. Animate this loop.
+[Scene 5 | 33–42s] The bottleneck forces the encoder to learn the ESSENCE of the data. 32 numbers capture the most important features.
+[Scene 6 | 42–50s] Applications: anomaly detection (normal inputs reconstruct well; anomalies don't), image denoising (input=noisy, output=clean), data compression.
+[Scene 7 | 50–57s] WOW MOMENT — "The latent space of an autoencoder is magic. Interpolate between two faces in latent space → you see faces morph smoothly. This became the foundation of Stable Diffusion."
 [Scene 8 | 57–60s] Outro: Applie AI Lab subscribe CTA.
 
-Storytelling, beginner-friendly, practical. SCENE_DATA pattern. class RenderScene(Scene).
+Storytelling, visual. SCENE_DATA pattern. class RenderScene(Scene).
 
 ### Scene Rules
 
