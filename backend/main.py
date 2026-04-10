@@ -53,6 +53,7 @@ class CustomVideoRequest(BaseModel):
     manim_code: str
     script: str
     tts_provider: Optional[str] = "gtts"
+    resolution: Optional[str] = "Shorts"
 
 @app.post("/generate-custom-video")
 async def generate_custom_video_endpoint(request: CustomVideoRequest):
@@ -70,7 +71,7 @@ async def generate_custom_video_endpoint(request: CustomVideoRequest):
 
             def producer():
                 try:
-                    for chunk in run_custom_pipeline(request.manim_code, request.script, request.tts_provider):
+                    for chunk in run_custom_pipeline(request.manim_code, request.script, request.tts_provider, request.resolution):
                         q.put(chunk)
                 except Exception as e:
                     q.put(json.dumps({"error": str(e)}))

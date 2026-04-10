@@ -37,6 +37,8 @@ stable-ts>=2.19.1
 
 # ── Visualization ─────────────────────────────────────────────────────────────
 manim>=0.18.0
+manim-voiceover[openai]
+setuptools<70
 streamlit>=1.31.0
 
 # ── Tools and Scraping ────────────────────────────────────────────────────────

@@ -41,7 +41,6 @@ def _throttle_google_tts():
 # ---------------------------------------------------------------------------
 # Main TTS function
 # ---------------------------------------------------------------------------
-
 def generate_google_tts(
     text: str,
     out_path: Path,
@@ -49,7 +48,7 @@ def generate_google_tts(
     voice_id: str = "Charon",
 ) -> None:
     """Generate TTS using Google's Gemini Text-To-Speech API
-    (gemini-2.5-flash).
+    (gemini-2.5-flash-preview-tts).
 
     Automatically respects the free-tier limit of 3 requests/minute via a
     token-bucket throttle, configured to 2 RPM to be safe. Retries up to 5 times on 429 errors as a
@@ -58,16 +57,23 @@ def generate_google_tts(
     if not api_key:
         raise ValueError("GOOGLE_API_KEY is not set.")
 
+    # 👇 FIXED: Use the dedicated Gemini 2.5 Flash TTS model
+    model_id = "gemini-2.5-flash-preview-tts"
+    
     url = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-2.5-flash:generateContent?key={api_key}"
+        f"{model_id}:generateContent?key={api_key}"
     )
     headers = {"Content-Type": "application/json"}
+
+    # Strip quotes to prevent the preview TTS model from interpreting them 
+    # as dialogue and randomly switching voices
+    safe_text = text.replace('"', '').replace('*', '')
 
     payload = {
         "contents": [
             {
-                "parts": [{"text": text}]
+                "parts": [{"text": safe_text}]
             }
         ],
         "generationConfig": {

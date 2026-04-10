@@ -8,7 +8,6 @@ def _synthesise_tts(text: str, out_path: Path, provider: str) -> None:
     """Entry point for all TTS synthesis."""
     if provider == "gtts":
         from gtts import gTTS
-        from pydub import AudioSegment
         mp3_path = out_path.with_suffix(".mp3")
         gTTS(text=text, lang="en", slow=False).save(str(mp3_path))
         AudioSegment.from_mp3(str(mp3_path)).export(str(out_path), format="wav")
@@ -24,7 +23,6 @@ def _synthesise_tts(text: str, out_path: Path, provider: str) -> None:
     elif provider == "openai":
         import asyncio
         from src.tts.open_ai import text_to_speech_bytes
-        from pydub import AudioSegment
         audio_bytes = asyncio.run(text_to_speech_bytes(text))
         mp3_path = out_path.with_suffix(".mp3")
         mp3_path.write_bytes(audio_bytes)
@@ -38,6 +36,15 @@ def _synthesise_tts(text: str, out_path: Path, provider: str) -> None:
     elif provider == "google":
         from src.tts.google_provider import generate_google_tts
         generate_google_tts(text, out_path, GOOGLE_API_KEY, GOOGLE_VOICE_ID)
+
+    elif provider == "deepgram":
+        from src.tts.deepgram_provider import generate_deepgram_tts
+        from src.agent.model_loader import DEEPGRAM_API_KEY, DEEPGRAM_VOICE_ID
+        generate_deepgram_tts(text, out_path, DEEPGRAM_API_KEY, DEEPGRAM_VOICE_ID)
+        mp3_path = out_path.with_suffix(".mp3")
+        if mp3_path.exists():
+            AudioSegment.from_mp3(str(mp3_path)).export(str(out_path), format="wav")
+            mp3_path.unlink(missing_ok=True)
 
     else:
         # Default fallback to gTTS

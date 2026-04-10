@@ -21,5 +21,11 @@ chatting_page = st.Page(
     icon="💬",
 )
 
-pg = st.navigation([workflow_page, chatting_page])
+voiceover_studio_page = st.Page(
+    "pages/voiceover_studio.py",
+    title="Voiceover Studio",
+    icon="🎙️",
+)
+
+pg = st.navigation([workflow_page, chatting_page, voiceover_studio_page])
 pg.run()

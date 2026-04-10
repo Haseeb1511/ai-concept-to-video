@@ -681,15 +681,22 @@ script_text = st.text_area(
 st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
 st.markdown('<p class="section-label">Pipeline Options</p>', unsafe_allow_html=True)
 
-col1, col2 = st.columns([2, 1])
+col1, col2, col3 = st.columns([1.5, 1.5, 1])
 with col1:
     tts_custom = st.selectbox(
         "🎙️ TTS Provider",
-        options=["openai", "elevenlabs", "google", "gtts", "coqui"],
-        index=0,
+        options=["openai", "elevenlabs", "google", "gtts", "coqui", "deepgram"],
+        index=5,
         key="custom_tts",
     )
 with col2:
+    resolution_custom = st.selectbox(
+        "📐 Video Size",
+        options=["480p (854x480)", "720p (1280x720)", "1080p (1920x1080)", "4K (3840x2160)", "Shorts (1080x1920)"],
+        index=4,
+        key="custom_resolution",
+    )
+with col3:
     backend_custom_url = st.text_input(
         "🔗 Backend URL",
         value=f"{backend_base}/generate-custom-video",
@@ -899,6 +906,7 @@ if custom_generate_btn:
                 "manim_code": final_manim,
                 "script": final_script,
                 "tts_provider": tts_custom,
+                "resolution": resolution_custom.split(" ")[0],
             }
             with requests.post(backend_custom_url, json=payload, stream=True, timeout=None) as response:
                 if response.status_code == 200:

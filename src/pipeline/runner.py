@@ -39,7 +39,8 @@ class PipelineState(TypedDict):
     manim_code: str
     script: str
     tts_provider: str
-
+    resolution: str
+    
     # Accumulated event JSON strings
     logs: Annotated[List[str], operator.add]
 
@@ -62,6 +63,7 @@ class SceneState(TypedDict):
     tts_text: str
     tts_provider: str
     manim_code: str
+    resolution: str
 
 
 # ─── Node 1: Split Script ────────────────────────────────────────────────────
@@ -97,6 +99,7 @@ def _map_scenes(state: PipelineState):
             "tts_text": tts_text,
             "tts_provider": state["tts_provider"],
             "manim_code": state["manim_code"],
+            "resolution": state.get("resolution", "Shorts"),
         }))
     return sends
 
@@ -151,10 +154,20 @@ def _node_process_scene(state: SceneState) -> dict:
                 print(f"        [{category}] Scene {scene_idx}: {msg}")
         return _cb
 
-    width, height = map(int, VIDEO_RESOLUTION.split("x"))
+    res_str = state.get("resolution", "Shorts")
+    if res_str == "480p":
+        width, height, quality = 854, 480, "low_quality"
+    elif res_str == "720p":
+        width, height, quality = 1280, 720, "medium_quality"
+    elif res_str == "1080p":
+        width, height, quality = 1920, 1080, "high_quality"
+    elif res_str == "4K":
+        width, height, quality = 3840, 2160, "production_quality"
+    else: # "Shorts"
+        width, height, quality = 1080, 1920, "high_quality"
 
     rendered = _render_manim_scene(
-        idx, manim_code, scene_data, width, height, MANIM_QUALITY,
+        idx, manim_code, scene_data, width, height, quality,
         log_callback=_make_log_callback(idx)
     )
 
@@ -274,6 +287,7 @@ def run_custom_pipeline(
     manim_code: str,
     script: str,
     tts_provider: str = "gtts",
+    resolution: str = "Shorts",
 ):
     """
     Yields structured JSON event strings consumed by the Streamlit frontend.
@@ -284,6 +298,7 @@ def run_custom_pipeline(
         "manim_code": manim_code,
         "script": script,
         "tts_provider": tts_provider,
+        "resolution": resolution,
         "logs": [],
         "scenes_raw": [],
         "scenes_for_tts": [],
