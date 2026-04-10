@@ -7,15 +7,18 @@ load_dotenv()
 # Base paths
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 RESULT_DIR = BASE_DIR / "manim_animation_result"
-AUDIO_DIR = RESULT_DIR / "audio"
-MANIM_SCENES_DIR = RESULT_DIR / "manim_scene"
-VIDEOS_DIR = RESULT_DIR / "final_output"
-OUTPUTS_DIR = RESULT_DIR / "outputs"
-MEDIA_DIR = RESULT_DIR / "media"
-TEMP_DIR = RESULT_DIR / "temp"
+
+# Organized Structure
+FINAL_VIDEOS_DIR = RESULT_DIR / "final_videos"
+INTERMEDIATE_DIR = RESULT_DIR / "intermediate"
+
+AUDIO_DIR = INTERMEDIATE_DIR / "audio"
+SCENES_DIR = INTERMEDIATE_DIR / "scenes"
+SCRIPTS_DIR = INTERMEDIATE_DIR / "scripts"
+TEMP_DIR = INTERMEDIATE_DIR / "temp"
 
 # Ensure directories exist
-for _d in [AUDIO_DIR, MANIM_SCENES_DIR, VIDEOS_DIR, OUTPUTS_DIR, MEDIA_DIR, TEMP_DIR]:
+for _d in [FINAL_VIDEOS_DIR, AUDIO_DIR, SCENES_DIR, SCRIPTS_DIR, TEMP_DIR]:
     _d.mkdir(parents=True, exist_ok=True)
 
 # LLM & EMBEDDING

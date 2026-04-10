@@ -13,7 +13,7 @@ from src.agent.progress import (
     evt_scene_render_start,
 )
 from src.agent.model_loader import (
-    AUDIO_DIR, VIDEO_RESOLUTION, VIDEO_OUTPUT_NAME, MANIM_QUALITY, OUTPUTS_DIR,
+    AUDIO_DIR, VIDEO_RESOLUTION, VIDEO_OUTPUT_NAME, MANIM_QUALITY, FINAL_VIDEOS_DIR,
 )
 from src.pipeline.utils import _strip_timestamps, _split_script_into_scenes, _get_audio_duration
 from src.tts import _synthesise_tts
@@ -202,8 +202,8 @@ def _node_stitch(state: PipelineState) -> dict:
     print(f"\n  🔗  Stitching {n} scene{'s' if n != 1 else ''} together…")
     logs.append(evt_stitch_start(n))
 
-    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
-    output_path = str(OUTPUTS_DIR / f"custom_{VIDEO_OUTPUT_NAME}")
+    FINAL_VIDEOS_DIR.mkdir(parents=True, exist_ok=True)
+    output_path = str(FINAL_VIDEOS_DIR / f"custom_{VIDEO_OUTPUT_NAME}")
 
     success = _stitch(rendered_scenes, audio_files, output_path)
 

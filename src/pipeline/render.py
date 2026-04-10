@@ -12,7 +12,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, END
 
 from src.agent.model_loader import (
-    MANIM_SCENES_DIR, VIDEOS_DIR, VIDEO_FPS, call_llm, get_tool_calling_llm
+    SCRIPTS_DIR, SCENES_DIR, VIDEO_FPS, call_llm, get_tool_calling_llm
 )
 from src.pipeline.utils import _get_quality_flag
 from src.mcp.client import get_mcp_tools
@@ -337,7 +337,7 @@ def _try_render_internal(scene_id, code, scene_data, width, height, quality, att
     script_code = MANIM_IMPORTS.format(width=width, height=height, fps=VIDEO_FPS)
     script_code += "\n" + cleaned
 
-    script_path = MANIM_SCENES_DIR / f"custom_scene_{scene_id}.py"
+    script_path = SCRIPTS_DIR / f"custom_scene_{scene_id}.py"
     script_path.write_text(script_code, encoding="utf-8")
     print(f"      📄 Script written → {script_path.name} ({len(script_code)} chars)")
 
@@ -347,7 +347,7 @@ def _try_render_internal(scene_id, code, scene_data, width, height, quality, att
     cmd = [
         sys.executable, "-m", "manim", "render", str(script_path), "RenderScene",
         quality_flag, "-o", output_name,
-        "--media_dir", str(MANIM_SCENES_DIR / "media"),
+        "--media_dir", str(SCRIPTS_DIR / "media"),
         "--renderer=cairo",
         "--disable_caching",
     ]
@@ -360,12 +360,12 @@ def _try_render_internal(scene_id, code, scene_data, width, height, quality, att
             cmd, env=env, capture_output=True, text=True,
             check=True, timeout=120,
         )
-        video_files = list((MANIM_SCENES_DIR / "media" / "videos").rglob(output_name))
+        video_files = list((SCRIPTS_DIR / "media" / "videos").rglob(output_name))
         if not video_files:
             print(f"      ⚠️  Manim finished but output file not found: {output_name}")
             return None, f"Manim finished but '{output_name}' not found."
 
-        final_path = VIDEOS_DIR / f"custom_scene_{scene_id}.mp4"
+        final_path = SCENES_DIR / f"custom_scene_{scene_id}.mp4"
         if final_path.exists():
             final_path.unlink()
         video_files[0].replace(final_path)
@@ -412,8 +412,8 @@ def _render_manim_scene(
     log_callback=None,
 ) -> str | None:
     """Agentic Manim renderer with LangGraph self-healing and multi-tier fallback."""
-    MANIM_SCENES_DIR.mkdir(parents=True, exist_ok=True)
-    VIDEOS_DIR.mkdir(parents=True, exist_ok=True)
+    SCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
+    SCENES_DIR.mkdir(parents=True, exist_ok=True)
 
     scene_text: str = scene_data.get("text", "")
     scene_duration: float = float(scene_data.get("duration", 5.0))
