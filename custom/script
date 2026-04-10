@@ -1,0 +1,23 @@
+[Scene 1 | 0–3s]
+"Have you ever wondered how AI works?"
+
+[Scene 2 | 3–10s]
+"Imagine feeding AI a photo of a dog. Inside its brain — millions of tiny dials called weights. All starting completely random."
+
+[Scene 3 | 10–18s]
+"AI makes its first guess: CAT. Wrong! See that glowing red error bar? That's how far off it is — the gap between prediction and reality."
+
+[Scene 4 | 18–26s]
+"Now watch. That error signal travels BACKWARD through the network. This is called Backpropagation. Every single dial gets a tiny nudge."
+
+[Scene 5 | 26–34s]
+"The dials adjust. AI guesses again — this time it says 'dog.' Look — the error bar is shrinking. It's learning."
+
+[Scene 6 | 34–42s]
+"Fast forward — ten thousand images trained. The error bar has nearly vanished. Now? It predicts dog correctly. Every. Single. Time."
+
+[Scene 7 | 42–52s]
+"That's literally it. AI is just a machine that adjusts millions of dials until it stops being wrong. That is the ENTIRE secret. Mind blown."
+
+[Scene 8 | 52–60s]
+"Thanks for watching! If you found this helpful, like this video and subscribe to Applie AI Lab — for more AI concepts explained simply!"

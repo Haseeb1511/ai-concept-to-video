@@ -1,0 +1,52 @@
+# ── Torch stack (must all match the same minor version) ──────────────────────
+torch==2.2.2
+torchvision==0.17.2
+torchaudio==2.2.2
+
+# ── Core TTS ─────────────────────────────────────────────────────────────────
+# TTS 0.21.3 requires transformers ~4.33–4.39; pin the upper bound here.
+TTS==0.21.3
+transformers>=4.33.0,<4.40.0
+
+# ── API and Utilities ─────────────────────────────────────────────────────────
+fastapi>=0.110.0
+uvicorn>=0.28.0
+# FIXED: 0.21.x is abandoned; modern stack needs >=1.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+python-slugify>=8.0.0
+
+# ── AI / LLM ──────────────────────────────────────────────────────────────────
+langgraph>=0.1.0
+langchain>=0.2.0
+langchain-openai>=0.1.0
+langchain-mcp-adapters>=0.1.0
+openai>=1.20.0
+# FIXED: 0.3.x API is incompatible with the rewritten 1.x SDK
+elevenlabs>=1.0.0
+
+# ── Audio / Video / Transcription ────────────────────────────────────────────
+gtts>=2.5.1
+pydub>=0.25.1
+# FIXED: Manim 0.18+ works with moviepy 2.x; removed <2.0.0 cap
+moviepy>=1.0.3
+# FIXED: 20230314 hard-pins tiktoken==0.3.1 → conflicts with langchain-openai>=0.5.2
+# 20231117+ relaxes tiktoken to >=0.3.3 (no upper bound), resolving the conflict
+openai-whisper>=20231117
+stable-ts>=2.19.1
+
+# ── Visualization ─────────────────────────────────────────────────────────────
+manim>=0.18.0
+streamlit>=1.31.0
+
+# ── Tools and Scraping ────────────────────────────────────────────────────────
+# FIXED: langchain-mcp-adapters requires mcp>=1.0.0
+mcp>=1.0.0
+beautifulsoup4
+duckduckgo-search
+
+# ── Google Cloud ──────────────────────────────────────────────────────────────
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+google-genai

@@ -1,0 +1,36 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+
+.env
+
+
+test_videos
+test_media
+
+.venv
+assets
+.env
+
+
+videos
+audio
+media
+outputs
+temp
+manim_scenes
+
+manim_animation_result
+manim_videos
+
+Previos version with default
+
+templates

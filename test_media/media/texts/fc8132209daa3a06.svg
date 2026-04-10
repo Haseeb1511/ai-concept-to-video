@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1080" height="1920" viewBox="0 0 1080 1920">
+<defs>
+<image id="source-26" x="0" y="0" width="21" height="25" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAZCAYAAADe1WXtAAAABmJLR0QA/wD/AP+gvaeTAAABQ0lEQVRIiWNgGCqAEcbYtna3xb//jKlE6frPeN0n1LkHlzQLXB0DU4ephaE9FxcXQTPv33nIsHn1Xn7fUOdabPJMCEP/8xBjIAMDA8PvX38Z5OVlajav3tuM11BSAT6DyTYUn8FkGcrLx8PAwcnOwMHJzsDMzMKgqCxXs2XtnmSYPAs+zbiApIwYCv/bt28MD+49tGJgYJiL09CH9x8z/Pr5i7DhUuIMPHw8GOJYDX339gPDj+/fCRrKxs5GvKGGJroEDcQHsBp6/PAphg/vPxHULKcgzaCtp0mcoZa2ZqQ6jrCh589cJipMRUSFGVQ1lIkzlCZhenj/CYYvn79giAsI8hEVNFgNtXW0INVxKICivD9qKAMDAwPD719/GP7/Z3wG4yMi6h/jigvnLmtw83Bxk2ro+3fvLzP8/zebGg6kLwAAVKFhkyCHAtMAAAAASUVORK5CYII="/>
+</defs>
+<use xlink:href="#source-26" transform="matrix(0.24, 0, 0, 0.24, 30.96, 18.96)"/>
+</svg>
